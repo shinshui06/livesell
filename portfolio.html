@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuildPro Portfolio</title>
+
+<!-- ═══ FIREBASE SDK (v9 compat) ═══ -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--yellow:#F5A623;--dark:#1A1A1A;--gray:#2D2D2D;--light:#F8F8F6;--white:#FFFFFF;--text:#333;--muted:#666;--border:#E0E0E0;--red:#E24B4A;--green:#3B6D11}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--light);color:var(--text)}
+nav{background:var(--dark);position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.nav-inner{max-width:1100px;margin:0 auto;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:58px}
+.nav-logo{color:var(--yellow);font-size:1.2rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px}
+.nav-logo span{color:#fff}
+.nav-links{display:flex;gap:2px;align-items:center}
+.nav-links button{background:none;border:none;color:#ccc;padding:7px 13px;border-radius:6px;font-size:.88rem;cursor:pointer;transition:all .2s;font-family:inherit}
+.nav-links button:hover{color:var(--yellow);background:rgba(245,166,35,.1)}
+.btn-admin{background:var(--yellow)!important;color:var(--dark)!important;font-weight:700!important;padding:7px 14px!important;border-radius:6px!important}
+.btn-admin:hover{background:#e09520!important}
+section{scroll-margin-top:58px}
+.hero{min-height:88vh;display:flex;align-items:center;position:relative;overflow:hidden;background:#1a1a1a}
+.hero-bg-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.45}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:40px 40px}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to right,rgba(26,26,26,.85) 55%,rgba(26,26,26,.3))}
+.hero-content{position:relative;max-width:1100px;margin:0 auto;padding:3rem 1.5rem}
+.hero-badge{display:inline-block;background:rgba(245,166,35,.15);border:1px solid rgba(245,166,35,.3);color:var(--yellow);padding:5px 15px;border-radius:20px;font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:1.5rem}
+.hero h1{font-size:clamp(2.2rem,5vw,3.6rem);color:#fff;font-weight:700;line-height:1.15;margin-bottom:.5rem}
+.hero h1 em{color:var(--yellow);font-style:normal}
+.hero-role{font-size:1.1rem;color:var(--yellow);font-weight:600;margin-bottom:1rem}
+.hero-tag{font-size:1rem;color:#bbb;max-width:520px;line-height:1.7;margin-bottom:2rem}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn-prim{background:var(--yellow);color:var(--dark);padding:12px 28px;border-radius:8px;font-weight:700;font-size:1rem;cursor:pointer;border:none;transition:all .2s;font-family:inherit}
+.btn-prim:hover{background:#e09520;transform:translateY(-1px)}
+.btn-out{background:transparent;color:#fff;padding:12px 28px;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;border:1.5px solid rgba(255,255,255,.3);transition:all .2s;font-family:inherit}
+.btn-out:hover{border-color:var(--yellow);color:var(--yellow)}
+.hero-stats{display:flex;gap:2.5rem;margin-top:3rem;flex-wrap:wrap}
+.stat-num{font-size:2rem;font-weight:700;color:var(--yellow)}
+.stat-lbl{font-size:.75rem;color:#888;text-transform:uppercase;letter-spacing:1px}
+.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+.sec-pad{padding:80px 0}
+.sec-head{text-align:center;margin-bottom:3rem}
+.sec-tag{display:inline-block;background:rgba(245,166,35,.12);color:var(--yellow);padding:4px 14px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:.8rem}
+.sec-title{font-size:clamp(1.7rem,3vw,2.3rem);font-weight:700;color:var(--dark);margin-bottom:.8rem}
+.sec-sub{color:var(--muted);max-width:500px;margin:0 auto;line-height:1.6}
+.about-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:3rem;align-items:center}
+.about-photo{aspect-ratio:4/5;background:var(--gray);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:5rem;color:#555;position:relative;overflow:hidden}
+.about-photo img{width:100%;height:100%;object-fit:cover;border-radius:16px}
+.about-badge{position:absolute;bottom:1rem;left:1rem;right:1rem;background:rgba(26,26,26,.92);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.ab-txt{color:#fff;font-size:.83rem}
+.ab-txt strong{display:block;font-size:.95rem}
+.about-info h2{font-size:1.9rem;font-weight:700;margin-bottom:.4rem}
+.about-role2{color:var(--yellow);font-weight:600;margin-bottom:1.2rem}
+.about-bio{color:var(--muted);line-height:1.8;margin-bottom:1.5rem}
+.skill-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:1.5rem}
+.skill-tag{background:var(--light);border:1px solid var(--border);color:var(--text);padding:5px 13px;border-radius:20px;font-size:.82rem;font-weight:500}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.dv{font-weight:600;color:var(--dark);font-size:.9rem}
+.srv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.2rem}
+.srv-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1.6rem 1.4rem;transition:all .25s;text-align:center}
+.srv-card:hover{border-color:var(--yellow);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.srv-img{width:72px;height:72px;border-radius:50%;object-fit:cover;margin:0 auto .9rem;display:block;background:var(--light);border:2px solid var(--border)}
+.srv-icon-wrap{width:64px;height:64px;border-radius:50%;background:rgba(245,166,35,.1);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto .9rem}
+.srv-name{font-weight:700;font-size:1rem;margin-bottom:.4rem}
+.srv-desc{color:var(--muted);font-size:.85rem;line-height:1.6}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:2rem}
+.flt-btn{padding:7px 18px;border-radius:20px;border:1.5px solid var(--border);background:transparent;cursor:pointer;font-size:.84rem;font-weight:500;transition:all .2s;color:var(--text);font-family:inherit}
+.flt-btn.active,.flt-btn:hover{background:var(--yellow);border-color:var(--yellow);color:var(--dark);font-weight:700}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.4rem}
+.proj-card{border-radius:14px;overflow:hidden;background:#fff;border:1px solid var(--border);transition:all .25s}
+.proj-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.1)}
+.proj-img{width:100%;height:190px;background:var(--gray);display:flex;align-items:center;justify-content:center;font-size:3rem;color:#666;position:relative;overflow:hidden}
+.proj-img img{width:100%;height:100%;object-fit:cover}
+.proj-cat{position:absolute;top:10px;left:10px;background:var(--yellow);color:var(--dark);font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;text-transform:uppercase}
+.proj-body{padding:1.1rem}
+.proj-title{font-weight:700;font-size:1rem;margin-bottom:.4rem}
+.proj-desc{color:var(--muted);font-size:.84rem;line-height:1.6}
+.proj-year{margin-top:.7rem;font-size:.75rem;color:var(--muted)}
+.timeline{position:relative;padding-left:2rem;max-width:680px;margin:0 auto}
+.timeline::before{content:'';position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:var(--yellow);opacity:.25}
+.tl-item{position:relative;margin-bottom:2.2rem}
+.tl-dot{position:absolute;left:-2rem;top:5px;width:16px;height:16px;background:var(--yellow);border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--yellow)}
+.tl-yr{font-size:.75rem;color:var(--yellow);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:.25rem}
+.tl-title{font-weight:700;font-size:1.05rem;margin-bottom:.25rem}
+.tl-co{color:var(--muted);font-size:.86rem;margin-bottom:.4rem;font-style:italic}
+.tl-desc{color:var(--muted);font-size:.86rem;line-height:1.6}
+.testi-sec{background:var(--dark)}
+.testi-sec .sec-title{color:#fff}
+.testi-sec .sec-sub{color:#888}
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1.4rem}
+.testi-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1.4rem}
+.stars{color:var(--yellow);font-size:.95rem;margin-bottom:.7rem;letter-spacing:2px}
+.testi-txt{color:#ccc;font-size:.9rem;line-height:1.7;margin-bottom:1.1rem;font-style:italic}
+.testi-auth{display:flex;align-items:center;gap:10px}
+.t-avatar{width:42px;height:42px;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center;color:var(--dark);font-weight:700;font-size:.9rem;flex-shrink:0;overflow:hidden}
+.t-avatar img{width:100%;height:100%;object-fit:cover}
+.t-name{font-weight:600;color:#fff;font-size:.88rem}
+.t-role{color:#888;font-size:.76rem}
+.contact-grid{display:grid;grid-template-columns:1fr 1.5fr;gap:3rem}
+.ci-title{font-size:1.4rem;font-weight:700;margin-bottom:1.2rem}
+.ci-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:1.1rem}
+.ci-icon{width:38px;height:38px;background:rgba(245,166,35,.12);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.ci-lbl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.ci-val{font-weight:600;color:var(--dark);font-size:.9rem}
+.wa-btn{display:inline-flex;align-items:center;gap:7px;background:#25D366;color:#fff;padding:10px 20px;border-radius:8px;font-weight:600;font-size:.9rem;cursor:pointer;border:none;margin-top:1rem;font-family:inherit}
+.cf-wrap{background:#fff;border:1px solid var(--border);border-radius:16px;padding:1.8rem}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fg{margin-bottom:.9rem}
+.fl{display:block;font-size:.78rem;font-weight:700;color:var(--dark);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.fi{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;color:var(--text);background:var(--light);transition:border .2s;font-family:inherit}
+.fi:focus{outline:none;border-color:var(--yellow);background:#fff}
+.fi::placeholder{color:#bbb}
+textarea.fi{resize:vertical;min-height:95px}
+.alert-ok{background:#f0f8ea;border:1px solid #c0dd97;color:#3B6D11;padding:10px 14px;border-radius:8px;font-size:.86rem;margin-bottom:.9rem}
+.alert-err{background:#fff5f5;border:1px solid #fcc;color:var(--red);padding:10px 14px;border-radius:8px;font-size:.86rem;margin-bottom:.9rem}
+footer{background:var(--dark);color:#777;padding:2.2rem 0}
+.foot-inner{max-width:1100px;margin:0 auto;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.foot-links{display:flex;gap:1.2rem;flex-wrap:wrap}
+.foot-links button{background:none;border:none;color:#777;font-size:.84rem;cursor:pointer;font-family:inherit;transition:color .2s;padding:0}
+.foot-links button:hover{color:var(--yellow)}
+.social-row{display:flex;gap:9px}
+.soc{width:32px;height:32px;background:rgba(255,255,255,.06);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.8rem;color:#777;transition:all .2s;border:none;font-family:inherit}
+.soc:hover{background:var(--yellow);color:var(--dark)}
+/* ADMIN */
+.admin-wrap{display:flex;min-height:600px;background:#f0f2f5}
+.admin-sidebar{width:230px;background:var(--dark);display:flex;flex-direction:column;flex-shrink:0}
+.s-logo{padding:1.1rem 1.3rem;border-bottom:1px solid rgba(255,255,255,.07)}
+.s-logo .lt{color:var(--yellow);font-weight:700;font-size:1rem}
+.s-logo .ls{color:#555;font-size:.72rem}
+.s-nav{padding:.6rem 0;flex:1;overflow-y:auto}
+.s-sec{padding:.7rem 1.3rem .25rem;font-size:.65rem;color:#555;text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
+.s-link{display:flex;align-items:center;gap:9px;padding:8px 1.3rem;color:#aaa;font-size:.85rem;cursor:pointer;transition:all .15s;border-left:3px solid transparent;background:none;border-right:none;border-top:none;border-bottom:none;width:100%;text-align:left;font-family:inherit}
+.s-link:hover{color:#fff;background:rgba(255,255,255,.04)}
+.s-link.active{color:var(--yellow);background:rgba(245,166,35,.08);border-left-color:var(--yellow)}
+.s-icon{font-size:.95rem;width:17px;text-align:center}
+.s-foot{padding:.9rem 1.3rem;border-top:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:7px}
+.logout-btn{width:100%;padding:8px;background:rgba(226,75,74,.15);border:1px solid rgba(226,75,74,.2);color:#f09595;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:600;font-family:inherit}
+.logout-btn:hover{background:rgba(226,75,74,.28)}
+.back-btn{width:100%;padding:7px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#888;border-radius:8px;cursor:pointer;font-size:.78rem;font-family:inherit}
+.back-btn:hover{color:#fff;background:rgba(255,255,255,.1)}
+.admin-main{flex:1;overflow-y:auto;padding:1.8rem;min-width:0}
+.a-topbar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.8rem;flex-wrap:wrap;gap:.8rem}
+.a-topbar h1{font-size:1.4rem;font-weight:700;color:var(--dark)}
+.a-topbar p{color:var(--muted);font-size:.85rem;margin-top:2px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.9rem;margin-bottom:1.8rem}
+.sc{background:#fff;border-radius:11px;padding:1.1rem;border:1px solid var(--border)}
+.sc .lbl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.sc .num{font-size:1.9rem;font-weight:700;color:var(--dark)}
+.sc .sub{font-size:.75rem;color:var(--green);margin-top:3px}
+.a-card{background:#fff;border:1px solid var(--border);border-radius:13px;padding:1.4rem;margin-bottom:1.4rem}
+.a-card h3{font-size:1rem;font-weight:700;margin-bottom:.9rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)}
+.a-tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.a-tbl th{text-align:left;padding:9px 11px;border-bottom:2px solid var(--border);color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.7px;background:#fafafa}
+.a-tbl td{padding:9px 11px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.a-tbl tr:last-child td{border-bottom:none}
+.a-tbl tr:hover td{background:#fafafa}
+.a-form .fg{margin-bottom:.9rem}
+.a-form label{display:block;font-size:.77rem;font-weight:700;color:var(--dark);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.a-form input,.a-form textarea,.a-form select{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:.88rem;color:var(--text);background:var(--light);font-family:inherit;transition:border .2s}
+.a-form input:focus,.a-form textarea:focus,.a-form select:focus{outline:none;border-color:var(--yellow);background:#fff}
+.a-form textarea{resize:vertical;min-height:75px}
+.a-form .f-row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.btn{padding:7px 16px;border-radius:7px;font-size:.83rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:5px}
+.btn-y{background:var(--yellow);color:var(--dark)}
+.btn-y:hover{background:#e09520}
+.btn-del{background:rgba(226,75,74,.1);color:var(--red);border:1px solid rgba(226,75,74,.2)}
+.btn-del:hover{background:rgba(226,75,74,.2)}
+.btn-gh{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-gh:hover{background:var(--light)}
+.btn-sm{padding:4px 11px;font-size:.76rem}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700;text-transform:uppercase}
+.bdg-y{background:rgba(245,166,35,.15);color:#8a5d00}
+.bdg-g{background:rgba(59,109,17,.12);color:#3B6D11}
+.bdg-b{background:rgba(24,95,165,.1);color:#185FA5}
+.bdg-r{background:rgba(226,75,74,.12);color:var(--red)}
+.login-wrap{min-height:500px;background:var(--dark);display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.login-card{background:#fff;border-radius:16px;padding:2.2rem;width:100%;max-width:360px}
+.l-logo{text-align:center;margin-bottom:1.8rem}
+.l-logo .ico{font-size:2.8rem;display:block;margin-bottom:.4rem}
+.l-logo h2{font-size:1.4rem;font-weight:700}
+.l-logo p{color:var(--muted);font-size:.83rem}
+.l-err{background:#fff5f5;border:1px solid #fcc;color:var(--red);padding:9px 13px;border-radius:8px;font-size:.83rem;margin-bottom:.9rem}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:500;padding:1rem}
+.modal-box{background:#fff;border-radius:15px;padding:1.8rem;width:100%;max-width:540px;max-height:88vh;overflow-y:auto}
+.modal-box h3{font-size:1.1rem;font-weight:700;margin-bottom:1.3rem}
+.modal-foot{display:flex;justify-content:flex-end;gap:9px;margin-top:1.3rem}
+.toast-msg{position:fixed;bottom:1.2rem;right:1.2rem;background:var(--dark);color:#fff;padding:11px 18px;border-radius:10px;font-size:.85rem;font-weight:500;z-index:9999;display:flex;align-items:center;gap:7px;animation:toastIn .3s ease}
+@keyframes toastIn{from{transform:translateX(120%)}to{transform:translateX(0)}}
+.star{font-size:1.2rem;cursor:pointer;color:#ddd;transition:color .1s}
+.star.on{color:var(--yellow)}
+.empty-st{text-align:center;padding:2.5rem 1rem;color:var(--muted)}
+.msg-card{border:1px solid var(--border);border-radius:11px;padding:1.1rem;margin-bottom:.9rem;background:#fff}
+.msg-card.unread{border-color:var(--yellow);background:rgba(245,166,35,.03)}
+.img-upload-wrap{border:2px dashed var(--border);border-radius:10px;padding:1rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--light)}
+.img-upload-wrap:hover{border-color:var(--yellow);background:rgba(245,166,35,.04)}
+.img-upload-wrap.has-img{border-style:solid;border-color:var(--yellow);padding:.5rem}
+.img-upload-wrap img{width:100%;max-height:160px;object-fit:cover;border-radius:7px;display:block}
+.img-upload-wrap .up-hint{font-size:.8rem;color:var(--muted);margin-top:.4rem}
+.img-upload-wrap .up-icon{font-size:1.8rem;margin-bottom:.3rem}
+.img-preview-round{width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid var(--yellow);display:block;margin:.4rem auto}
+.img-clear-btn{font-size:.72rem;color:var(--red);cursor:pointer;background:none;border:none;font-family:inherit;margin-top:.3rem;text-decoration:underline}
+/* Mind Map */
+.mm-section{background:var(--dark);padding:80px 0}
+.mm-section .sec-title{color:#fff}
+.mm-section .sec-sub{color:#888}
+.mm-hub-wrap{position:relative;width:100%;overflow:hidden;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07)}
+.mm-hub-wrap svg{display:block;width:100%}
+.mm-proj-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:800;padding:1rem;backdrop-filter:blur(4px)}
+.mm-proj-box{background:var(--dark);border:1px solid rgba(255,255,255,.12);border-radius:16px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;padding:1.6rem;color:#fff}
+.mm-prog-bar{flex:1;height:7px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden}
+.mm-prog-fill{height:100%;border-radius:99px}
+.mm-task-info-box{background:#1f1f1f;border:1px solid rgba(255,255,255,.1);border-radius:12px;width:100%;max-width:360px;padding:1.3rem;color:#fff}
+.mm-task-info-box h3{font-size:1rem;font-weight:700;margin-bottom:.8rem}
+.mm-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-top:.6rem}
+.mm-gallery img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.1)}
+.mm-img-thumb{position:relative;display:inline-block}
+.mm-img-thumb img{width:80px;height:80px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border)}
+.rm-img{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.mm-img-add{width:80px;height:80px;border:1.5px dashed var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:.72rem;color:var(--muted);gap:2px}
+.mm-img-gallery{display:flex;flex-wrap:wrap;gap:7px;align-items:flex-start}
+@media(max-width:760px){
+  .about-grid,.contact-grid{grid-template-columns:1fr}
+  .f-row,.a-form .f-row{grid-template-columns:1fr}
+  .admin-wrap{flex-direction:column}
+  .admin-sidebar{width:100%}
+  .s-nav{display:flex;flex-wrap:wrap;padding:.4rem}
+  .s-link{padding:7px 10px;border-left:none;border-bottom:2px solid transparent;font-size:.78rem}
+  .s-link.active{border-left:none;border-bottom-color:var(--yellow)}
+  .s-sec{display:none}
+  .hero-stats{gap:1.5rem}
+  .nav-links button:not(.btn-admin){display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav id="main-nav" style="display:none">
+  <div class="nav-inner">
+    <div class="nav-logo" onclick="scrollToSection('hero')">🔨 <span>BuildPro</span></div>
+    <div class="nav-links">
+      <button onclick="scrollToSection('about')">About</button>
+      <button onclick="scrollToSection('services')">Services</button>
+      <button onclick="scrollToSection('projects')">Projects</button>
+      <button onclick="scrollToSection('experience')">Experience</button>
+      <button onclick="scrollToSection('contact')">Contact</button>
+      <button class="btn-admin" id="nav-admin-btn" onclick="showAdmin()">⚙ Admin</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ PUBLIC VIEW ═══ -->
+<div id="public-view">
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-overlay"></div>
+    <img class="hero-bg-img" id="hero-bg" style="display:none" alt="">
+    <div class="hero-content">
+      <div class="hero-badge" id="hero-badge">⭐ Licensed General Contractor</div>
+      <h1 id="hero-name">Marcus J. <em>Rivera</em></h1>
+      <div class="hero-role" id="hero-title">Licensed General Contractor</div>
+      <div class="hero-tag" id="hero-tagline">Building dreams with precision and craftsmanship.</div>
+      <div class="hero-btns">
+        <button class="btn-prim" id="hero-btn1" onclick="scrollToSection('projects')">View Projects</button>
+        <button class="btn-out" id="hero-btn2" onclick="scrollToSection('contact')">Contact Me</button>
+      </div>
+      <div class="hero-stats">
+        <div><div class="stat-num" id="stat-yrs">15+</div><div class="stat-lbl">Years Exp.</div></div>
+        <div><div class="stat-num" id="stat-proj">120+</div><div class="stat-lbl">Projects Done</div></div>
+        <div><div class="stat-num" id="stat-clients">98%</div><div class="stat-lbl">Happy Clients</div></div>
+        <div><div class="stat-num" id="stat-awards">12</div><div class="stat-lbl">Awards Won</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="sec-pad" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-photo" id="about-photo-wrap">
+          <span>👷</span>
+          <div class="about-badge">
+            <span style="font-size:1.2rem">⭐</span>
+            <div class="ab-txt"><strong id="ab-license">CA #B-784521</strong><span id="ab-avail">Available for new projects</span></div>
+          </div>
+        </div>
+        <div class="about-info">
+          <div class="sec-tag">About Me</div>
+          <h2 id="about-name">Marcus Rivera</h2>
+          <div class="about-role2" id="about-role">Licensed General Contractor</div>
+          <p class="about-bio" id="about-bio">I'm Marcus Rivera, a licensed general contractor...</p>
+          <div class="skill-tags" id="about-skills"></div>
+          <div class="detail-grid">
+            <div><div class="dl">Location</div><div class="dv" id="about-loc">Greater Metro Area, CA</div></div>
+            <div><div class="dl">License</div><div class="dv" id="about-lic">CA #B-784521</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="sec-pad" id="services" style="background:#fff">
+    <div class="container">
+      <div class="sec-head">
+        <div class="sec-tag">What I Offer</div>
+        <div class="sec-title">Services</div>
+        <div class="sec-sub">Professional construction services tailored to your project needs.</div>
+      </div>
+      <div class="srv-grid" id="srv-grid"></div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section class="sec-pad" id="projects">
+    <div class="container">
+      <div class="sec-head">
+        <div class="sec-tag">My Work</div>
+        <div class="sec-title">Featured Projects</div>
+        <div class="sec-sub">A selection of recent residential and commercial work.</div>
+      </div>
+      <div class="filter-bar" id="proj-filters"></div>
+      <div class="proj-grid" id="proj-grid"></div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section class="sec-pad" id="experience" style="background:#fff">
+    <div class="container">
+      <div class="sec-head">
+        <div class="sec-tag">Career</div>
+        <div class="sec-title">Experience</div>
+        <div class="sec-sub">My professional journey in construction and contracting.</div>
+      </div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="sec-pad testi-sec" id="testimonials">
+    <div class="container">
+      <div class="sec-head">
+        <div class="sec-tag">Reviews</div>
+        <div class="sec-title">Client Testimonials</div>
+        <div class="sec-sub" style="color:#888">What clients say about working with me.</div>
+      </div>
+      <div class="testi-grid" id="testi-grid"></div>
+    </div>
+  </section>
+
+  <!-- MIND MAP -->
+  <section class="sec-pad mm-section" id="mindmap">
+    <div class="container">
+      <div class="sec-head">
+        <div class="sec-tag" style="background:rgba(245,166,35,.15)">Live Tracker</div>
+        <div class="sec-title">Project Mind Map</div>
+        <div class="sec-sub">Visual overview of ongoing and completed projects.</div>
+      </div>
+      <div class="mm-hub-wrap" id="mm-hub-wrap" style="min-height:320px"></div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="sec-pad" id="contact" style="background:#fff">
+    <div class="container">
+      <div class="sec-head">
+        <div class="sec-tag">Get In Touch</div>
+        <div class="sec-title">Contact Me</div>
+        <div class="sec-sub">Ready to start your project? Let's talk.</div>
+      </div>
+      <div class="contact-grid">
+        <div>
+          <div class="ci-title">Contact Info</div>
+          <div class="ci-item"><div class="ci-icon">📞</div><div><div class="ci-lbl">Phone</div><div class="ci-val" id="ci-phone">+1 (555) 438-7821</div></div></div>
+          <div class="ci-item"><div class="ci-icon">✉️</div><div><div class="ci-lbl">Email</div><div class="ci-val" id="ci-email">marcus@riveraconstruction.com</div></div></div>
+          <div class="ci-item"><div class="ci-icon">📍</div><div><div class="ci-lbl">Location</div><div class="ci-val" id="ci-loc">Greater Metro Area, CA</div></div></div>
+          <button class="wa-btn" id="wa-btn" onclick="openWhatsapp()">💬 WhatsApp Me</button>
+          <div class="social-row" id="social-row" style="margin-top:1.2rem;gap:10px"></div>
+        </div>
+        <div class="cf-wrap">
+          <div id="contact-alert" style="display:none"></div>
+          <div class="f-row fg">
+            <div><label class="fl">Name *</label><input class="fi" id="cf-name" placeholder="Your name"></div>
+            <div><label class="fl">Email *</label><input class="fi" id="cf-email" type="email" placeholder="you@example.com"></div>
+          </div>
+          <div class="f-row fg">
+            <div><label class="fl">Phone</label><input class="fi" id="cf-phone" placeholder="+1 (555) ..."></div>
+            <div><label class="fl">Project Type</label>
+              <select class="fi" id="cf-type">
+                <option value="">Select...</option>
+                <option>Residential Construction</option>
+                <option>Renovation &amp; Remodeling</option>
+                <option>Carpentry</option>
+                <option>Masonry</option>
+                <option>Roofing</option>
+                <option>Painting</option>
+                <option>General Repairs</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg"><label class="fl">Message *</label><textarea class="fi" id="cf-msg" placeholder="Describe your project..."></textarea></div>
+          <button class="btn-prim" onclick="submitContact()" style="width:100%">Send Message</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="foot-inner">
+      <div>
+        <div style="color:var(--yellow);font-weight:700;font-size:1rem;margin-bottom:.3rem">🔨 BuildPro</div>
+        <div id="foot-copy" style="font-size:.8rem">© 2024 Rivera Construction LLC</div>
+      </div>
+      <div class="foot-links">
+        <button onclick="scrollToSection('about')">About</button>
+        <button onclick="scrollToSection('services')">Services</button>
+        <button onclick="scrollToSection('projects')">Projects</button>
+        <button onclick="scrollToSection('contact')">Contact</button>
+      </div>
+      <div class="social-row" id="foot-social"></div>
+    </div>
+  </footer>
+</div><!-- /public-view -->
+
+<!-- ═══ ADMIN VIEW ═══ -->
+<div id="admin-view" style="display:none">
+  <nav style="background:var(--dark);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100">
+    <div style="color:var(--yellow);font-weight:700">🔨 BuildPro Admin</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-gh btn-sm" onclick="showPublic()">← View Site</button>
+      <button class="btn btn-del btn-sm" onclick="adminLogout()">Logout</button>
+    </div>
+  </nav>
+  <div class="admin-wrap">
+    <div class="admin-sidebar">
+      <div class="s-logo"><div class="lt">Admin Panel</div><div class="ls" id="admin-email-label">admin</div></div>
+      <div class="s-nav">
+        <div class="s-sec">Content</div>
+        <button class="s-link active" id="sl-dashboard" onclick="adminNav('dashboard')"><span class="s-icon">📊</span>Dashboard</button>
+        <button class="s-link" id="sl-hero" onclick="adminNav('hero')"><span class="s-icon">🏠</span>Hero</button>
+        <button class="s-link" id="sl-about" onclick="adminNav('about')"><span class="s-icon">👷</span>About</button>
+        <button class="s-link" id="sl-services" onclick="adminNav('services')"><span class="s-icon">🔧</span>Services</button>
+        <button class="s-link" id="sl-portfolio" onclick="adminNav('portfolio')"><span class="s-icon">🏗️</span>Portfolio</button>
+        <button class="s-link" id="sl-experience" onclick="adminNav('experience')"><span class="s-icon">📋</span>Experience</button>
+        <button class="s-link" id="sl-testimonials" onclick="adminNav('testimonials')"><span class="s-icon">⭐</span>Testimonials</button>
+        <button class="s-link" id="sl-mindmap" onclick="adminNav('mindmap')"><span class="s-icon">🗺️</span>Mind Map</button>
+        <div class="s-sec">Settings</div>
+        <button class="s-link" id="sl-messages" onclick="adminNav('messages')"><span class="s-icon">✉️</span>Messages <span id="unread-badge" style="display:none;background:var(--red);color:#fff;border-radius:99px;padding:1px 7px;font-size:.68rem;margin-left:auto"></span></button>
+        <button class="s-link" id="sl-settings" onclick="adminNav('settings')"><span class="s-icon">⚙️</span>Settings</button>
+      </div>
+    </div>
+    <div class="admin-main" id="admin-main">
+      <!-- Content rendered by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOGIN VIEW ═══ -->
+<div id="login-view" style="display:none">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="l-logo">
+        <span class="ico">🔨</span>
+        <h2>Admin Login</h2>
+        <p>BuildPro Portfolio Admin</p>
+      </div>
+      <div id="login-err" class="l-err" style="display:none"></div>
+      <div class="a-form">
+        <div class="fg"><label>Admin Email</label><input type="email" id="login-email" placeholder="admin@example.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div class="fg"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      </div>
+      <button class="btn-prim" style="width:100%" onclick="doLogin()">Sign In</button>
+      <button class="btn" style="width:100%;margin-top:.6rem;background:none;color:var(--muted)" onclick="showPublic()">← Back to Site</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOADING ═══ -->
+<div id="loading-view" style="position:fixed;inset:0;background:#1a1a1a;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:1rem">
+  <div style="font-size:3rem">🔨</div>
+  <div style="color:var(--yellow);font-weight:700;font-size:1.1rem">BuildPro Portfolio</div>
+  <div style="color:#555;font-size:.85rem">Loading...</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  FIREBASE CONFIG — Replace with your values!
+//  Go to: Firebase Console → Project Settings → Your apps → Firebase SDK snippet
+// ══════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyB5BJzBCBM9MgwmGJv3LdP6qjUyEgQGWv4",
+  authDomain: "portfolio-2c9ff.firebaseapp.com",
+  projectId: "portfolio-2c9ff",
+  storageBucket: "portfolio-2c9ff.firebasestorage.app",
+  messagingSenderId: "222773819694",
+  appId: "1:222773819694:web:71bd1e492c8f42d189e2bf"
+};
+firebase.initializeApp(firebaseConfig);
+const db      = firebase.firestore();
+const auth    = firebase.auth();
+const storage = firebase.storage();
+
+// ══════════════════════════════════════════════
+//  DEFAULT DATA (mirrors PHP defaults)
+// ══════════════════════════════════════════════
+const DEFAULT_DATA = {
+  hero: {
+    name:'Marcus J. Rivera', title:'Licensed General Contractor',
+    tagline:'Building dreams with precision and craftsmanship. 15+ years delivering quality residential and commercial construction.',
+    btnPrimary:'View Projects', btnSecondary:'Contact Me',
+    yearsExp:15, projectsDone:120, happyClients:98, awardsWon:12
+  },
+  about: {
+    bio:"I'm Marcus Rivera, a licensed general contractor with over 15 years of hands-on experience. Starting as a carpenter's apprentice, I built my reputation on meticulous craftsmanship, transparent communication, and delivering projects on time and within budget.",
+    specializations:['Residential Construction','Commercial Renovation','Carpentry','Masonry','Roofing','Project Management'],
+    location:'Greater Metro Area, CA', license:'CA #B-784521', availability:'Available for new projects'
+  },
+  services:[
+    {id:1,icon:'🏠',name:'Residential Construction',desc:'Custom home builds from foundation to finish, tailored to your vision and budget.'},
+    {id:2,icon:'🔨',name:'Renovation & Remodeling',desc:'Complete interior and exterior renovations that transform existing spaces.'},
+    {id:3,icon:'🪵',name:'Carpentry',desc:'Fine woodwork, custom cabinets, framing, and finish carpentry with precision.'},
+    {id:4,icon:'🧱',name:'Masonry',desc:'Brick, block, and stone work — walkways, retaining walls, and foundations.'},
+    {id:5,icon:'🏗️',name:'Roofing',desc:'Installation, repair, and replacement of all roofing systems.'},
+    {id:6,icon:'🎨',name:'Painting',desc:'Interior and exterior painting with premium materials and clean finishes.'},
+    {id:7,icon:'🔲',name:'Tile Installation',desc:'Expert tile work for floors, bathrooms, kitchens, and outdoor spaces.'},
+    {id:8,icon:'🔧',name:'General Repairs',desc:'Comprehensive maintenance and repair services for residential properties.'}
+  ],
+  projects:[
+    {id:1,title:'Sunset Ridge Residence',category:'Residential',desc:'Complete 3,200 sq ft custom home build featuring open-plan living and modern finishes.',year:'2024'},
+    {id:2,title:'Downtown Loft Renovation',category:'Renovation',desc:'Full gut renovation of a 1,800 sq ft industrial loft into a luxury living space.',year:'2024'},
+    {id:3,title:'Garden Terrace Masonry',category:'Masonry',desc:'Raised stone terrace with retaining walls, steps, and decorative stonework.',year:'2023'},
+    {id:4,title:'Oak Valley Kitchen',category:'Renovation',desc:'High-end kitchen remodel with custom cabinetry, quartz countertops, and tile.',year:'2023'},
+    {id:5,title:'Cedar Deck & Pergola',category:'Carpentry',desc:'Custom cedar deck with pergola, built-in seating, and decorative beam work.',year:'2023'},
+    {id:6,title:'Hilltop Estate Build',category:'Residential',desc:'4,800 sq ft luxury estate with five bedrooms and full outdoor entertainment area.',year:'2022'}
+  ],
+  experience:[
+    {id:1,year:'2018–Present',title:'Owner & Lead Contractor',company:'Rivera Construction LLC',desc:'Founded and operate a full-service general contracting firm serving residential and commercial clients.'},
+    {id:2,year:'2014–2018',title:'Senior Project Manager',company:'BuildRight Construction Co.',desc:'Led teams of 15+ workers on projects up to $2M. Delivered 30+ projects on time and under budget.'},
+    {id:3,year:'2010–2014',title:'Journeyman Carpenter',company:'Heritage Woodworks Inc.',desc:'Specialized finish carpentry, custom cabinetry, and structural framing for residential projects.'},
+    {id:4,year:'2008–2010',title:'Construction Apprentice',company:'Metro Build Associates',desc:'Foundational training in all aspects of residential construction and site safety.'}
+  ],
+  testimonials:[
+    {id:1,name:'Sandra L.',role:'Homeowner',review:'Marcus and his team transformed our outdated kitchen into a stunning space. Impeccable craftsmanship and finished two days ahead of schedule!',rating:5},
+    {id:2,name:'David & Kim T.',role:'Custom Home Clients',review:'We built our dream home with Rivera Construction. Marcus was transparent, responsive, and delivered beyond our expectations.',rating:5},
+    {id:3,name:'Tom H.',role:'Property Developer',review:"I've worked with many contractors. Marcus stands out for his attention to detail. My go-to for all renovations.",rating:5}
+  ],
+  settings:{
+    phone:'+1 (555) 438-7821', email:'marcus@riveraconstruction.com', whatsapp:'+15554387821',
+    location:'Greater Metro Area, CA', facebook:'#', instagram:'#', linkedin:'#', youtube:''
+  },
+  images:{},
+  mindmap_projects:[],
+  _nid:200
+};
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let D = JSON.parse(JSON.stringify(DEFAULT_DATA));
+let isAdmin = false;
+let currentAdminPage = 'dashboard';
+let allContacts = [];
+let projFilter = 'All';
+
+// ══════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════
+function esc(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function scrollToSection(id){ const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); }
+function toast(msg,color){
+  document.querySelectorAll('.toast-msg').forEach(t=>t.remove());
+  const t=document.createElement('div'); t.className='toast-msg';
+  t.style.background=color||'var(--dark)';
+  t.innerHTML='<span>'+esc(msg)+'</span>';
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+function imgUrl(key){ return (D.images&&D.images[key])||null; }
+function closeModal(){ const m=document.getElementById('_modal'); if(m)m.remove(); }
+function showModal(html){
+  closeModal();
+  const div=document.createElement('div'); div.id='_modal'; div.className='modal-bg';
+  div.innerHTML='<div class="modal-box">'+html+'</div>';
+  div.addEventListener('click',e=>{ if(e.target===div) closeModal(); });
+  document.body.appendChild(div);
+}
+function stars(n){ let s=''; for(let i=0;i<n;i++) s+='★'; return s; }
+
+// ══════════════════════════════════════════════
+//  FIREBASE DATA LOAD / SAVE
+// ══════════════════════════════════════════════
+async function loadData(){
+  try {
+    const doc = await db.collection('portfolio').doc('data').get();
+    if(doc.exists){
+      const saved = doc.data();
+      D = Object.assign({}, DEFAULT_DATA, saved);
+      // Make sure arrays aren't overwritten with undefined
+      ['services','projects','experience','testimonials','mindmap_projects'].forEach(k=>{
+        if(!D[k]) D[k] = DEFAULT_DATA[k]||[];
+      });
+      if(!D.images) D.images={};
+      if(!D.hero) D.hero = DEFAULT_DATA.hero;
+      if(!D.about) D.about = DEFAULT_DATA.about;
+      if(!D.settings) D.settings = DEFAULT_DATA.settings;
+    }
+  } catch(e){ console.warn('loadData error:', e.message); }
+}
+
+async function saveData(){
+  try {
+    await db.collection('portfolio').doc('data').set(D, {merge:true});
+    toast('Saved successfully! ✅');
+  } catch(e){ toast('Save failed: '+e.message,'#E24B4A'); }
+}
+
+// ══════════════════════════════════════════════
+//  PUBLIC RENDERING
+// ══════════════════════════════════════════════
+function renderPublic(){
+  renderHero(); renderAbout(); renderServices(); renderProjects();
+  renderExperience(); renderTestimonials(); renderContact(); renderMindmap();
+}
+
+function renderHero(){
+  const h=D.hero||{};
+  const names = (h.name||'').split(' ');
+  const last = names.pop(); const first = names.join(' ');
+  document.getElementById('hero-name').innerHTML = esc(first)+' <em>'+esc(last)+'</em>';
+  document.getElementById('hero-title').textContent = h.title||'';
+  document.getElementById('hero-tagline').textContent = h.tagline||'';
+  const b1=document.getElementById('hero-btn1'); if(b1) b1.textContent=h.btnPrimary||'View Projects';
+  const b2=document.getElementById('hero-btn2'); if(b2) b2.textContent=h.btnSecondary||'Contact Me';
+  document.getElementById('stat-yrs').textContent=(h.yearsExp||15)+'+';
+  document.getElementById('stat-proj').textContent=(h.projectsDone||120)+'+';
+  document.getElementById('stat-clients').textContent=(h.happyClients||98)+'%';
+  document.getElementById('stat-awards').textContent=(h.awardsWon||12);
+  const bgImg=imgUrl('hero_bg');
+  const bgEl=document.getElementById('hero-bg');
+  if(bgImg&&bgEl){ bgEl.src=bgImg; bgEl.style.display=''; }
+}
+
+function renderAbout(){
+  const a=D.about||{}; const s=D.settings||{};
+  document.getElementById('about-name').textContent=(D.hero||{}).name||'';
+  document.getElementById('about-role').textContent=(D.hero||{}).title||'';
+  document.getElementById('about-bio').textContent=a.bio||'';
+  document.getElementById('ab-license').textContent=a.license||'';
+  document.getElementById('ab-avail').textContent=a.availability||'';
+  document.getElementById('about-loc').textContent=a.location||'';
+  document.getElementById('about-lic').textContent=a.license||'';
+  const skillEl=document.getElementById('about-skills');
+  skillEl.innerHTML=(a.specializations||[]).map(sp=>'<span class="skill-tag">'+esc(sp)+'</span>').join('');
+  const photoWrap=document.getElementById('about-photo-wrap');
+  const photoUrl=imgUrl('about_photo');
+  const existImg=photoWrap.querySelector('img');
+  if(photoUrl&&!existImg){
+    const img=document.createElement('img'); img.src=photoUrl;
+    img.alt='About photo'; img.style='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+    photoWrap.insertBefore(img, photoWrap.firstChild);
+  } else if(photoUrl&&existImg){ existImg.src=photoUrl; }
+}
+
+function renderServices(){
+  const grid=document.getElementById('srv-grid');
+  grid.innerHTML=(D.services||[]).map(s=>{
+    const imgUrl2=imgUrl('service_'+s.id);
+    const iconHtml=imgUrl2
+      ? '<img class="srv-img" src="'+esc(imgUrl2)+'" alt="'+esc(s.name)+'">'
+      : '<div class="srv-icon-wrap">'+esc(s.icon||'🔧')+'</div>';
+    return '<div class="srv-card">'+iconHtml+'<div class="srv-name">'+esc(s.name)+'</div><div class="srv-desc">'+esc(s.desc)+'</div></div>';
+  }).join('');
+}
+
+function renderProjects(){
+  const projs=D.projects||[];
+  const cats=['All',...new Set(projs.map(p=>p.category).filter(Boolean))];
+  const filterBar=document.getElementById('proj-filters');
+  filterBar.innerHTML=cats.map(c=>'<button class="flt-btn'+(c===projFilter?' active':'')+'" onclick="setFilter(\''+esc(c)+'\')">'+esc(c)+'</button>').join('');
+  const filtered=projFilter==='All'?projs:projs.filter(p=>p.category===projFilter);
+  document.getElementById('proj-grid').innerHTML=filtered.map(p=>{
+    const pImg=imgUrl('project_'+p.id);
+    const imgHtml=pImg?'<img src="'+esc(pImg)+'" alt="'+esc(p.title)+'">':`<span style="font-size:3rem">🏗️</span>`;
+    return '<div class="proj-card"><div class="proj-img">'+imgHtml+'<span class="proj-cat">'+esc(p.category||'')+'</span></div><div class="proj-body"><div class="proj-title">'+esc(p.title)+'</div><div class="proj-desc">'+esc(p.desc||'')+'</div><div class="proj-year">📅 '+esc(p.year||'')+'</div></div></div>';
+  }).join('');
+}
+function setFilter(cat){ projFilter=cat; renderProjects(); }
+
+function renderExperience(){
+  document.getElementById('timeline').innerHTML=(D.experience||[]).map(e=>`
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-yr">${esc(e.year)}</div>
+      <div class="tl-title">${esc(e.title)}</div>
+      <div class="tl-co">${esc(e.company)}</div>
+      <div class="tl-desc">${esc(e.desc||'')}</div>
+    </div>`).join('');
+}
+
+function renderTestimonials(){
+  document.getElementById('testi-grid').innerHTML=(D.testimonials||[]).map(t=>{
+    const av=imgUrl('testi_'+t.id);
+    const avHtml=av?'<img src="'+esc(av)+'" alt="'+esc(t.name)+'">':`<span>${(t.name||'?')[0]}</span>`;
+    return `<div class="testi-card"><div class="stars">${stars(t.rating||5)}</div><div class="testi-txt">"${esc(t.review)}"</div><div class="testi-auth"><div class="t-avatar">${avHtml}</div><div><div class="t-name">${esc(t.name)}</div><div class="t-role">${esc(t.role||'')}</div></div></div></div>`;
+  }).join('');
+}
+
+function renderContact(){
+  const s=D.settings||{};
+  document.getElementById('ci-phone').textContent=s.phone||'';
+  document.getElementById('ci-email').textContent=s.email||'';
+  document.getElementById('ci-loc').textContent=s.location||'';
+  // Social icons
+  const socials=[
+    {key:'facebook',icon:'f',label:'Facebook'},{key:'instagram',icon:'ig',label:'Instagram'},
+    {key:'linkedin',icon:'in',label:'LinkedIn'},{key:'youtube',icon:'yt',label:'YouTube'}
+  ];
+  const socHtml=socials.filter(x=>s[x.key]&&s[x.key]!='#').map(x=>`<a href="${esc(s[x.key])}" target="_blank" style="text-decoration:none"><button class="soc" title="${x.label}">${x.icon}</button></a>`).join('');
+  document.getElementById('social-row').innerHTML=socHtml;
+  document.getElementById('foot-social').innerHTML=socHtml;
+}
+
+function openWhatsapp(){
+  const wa=(D.settings||{}).whatsapp||'';
+  if(wa) window.open('https://wa.me/'+wa.replace(/\D/g,''),'_blank');
+}
+
+function renderMindmap(){
+  const projs=D.mindmap_projects||[];
+  const wrap=document.getElementById('mm-hub-wrap');
+  if(!projs.length){ wrap.innerHTML='<div style="text-align:center;padding:4rem 1rem;color:#555;font-size:.9rem">No mind map projects yet.</div>'; return; }
+  drawMindmapHub(projs, wrap);
+}
+
+// ══════════════════════════════════════════════
+//  MIND MAP (public)
+// ══════════════════════════════════════════════
+const MM_ACCENTS=['#F5A623','#4FC3F7','#A5D6A7','#CE93D8','#FF8A65','#80CBC4'];
+const MM_PRI_COLOR={high:'#E24B4A',mid:'#F5A623',low:'#3B6D11'};
+function mmPct(tasks){ if(!tasks||!tasks.length)return 0; return Math.round(tasks.reduce((s,t)=>s+(+t.pct||0),0)/tasks.length); }
+function mmSc(p){ if(p>=80)return '#3B6D11'; if(p>=50)return '#F5A623'; return '#E24B4A'; }
+
+function drawMindmapHub(projs, wrap){
+  const W=wrap.offsetWidth||800, H=Math.max(320,Math.min(500,W*0.55));
+  wrap.style.height=H+'px';
+  const cx=W/2, cy=H/2;
+  const n=projs.length; const r=Math.min(W,H)*0.36;
+  let defs='',lines='',nodes='',clips='';
+  // Center
+  clips+='<clipPath id="pub-center"><circle cx="'+cx+'" cy="'+cy+'" r="38"/></clipPath>';
+  nodes+='<circle cx="'+cx+'" cy="'+cy+'" r="38" fill="rgba(245,166,35,.15)" stroke="#F5A623" stroke-width="1.5"/>';
+  nodes+='<text x="'+cx+'" y="'+(cy-4)+'" text-anchor="middle" fill="#F5A623" font-size="12" font-weight="700">Projects</text>';
+  nodes+='<text x="'+cx+'" y="'+(cy+13)+'" text-anchor="middle" fill="#F5A623" font-size="10">'+n+' total</text>';
+  projs.forEach(function(p,i){
+    const angle=(2*Math.PI*i/n)-(Math.PI/2);
+    const px=cx+r*Math.cos(angle), py=cy+r*Math.sin(angle);
+    const acc=p.accent||MM_ACCENTS[i%MM_ACCENTS.length];
+    const pg=mmPct(p.tasks||[]);
+    const lx=cx+40*Math.cos(angle), ly=cy+40*Math.sin(angle);
+    lines+='<line x1="'+lx.toFixed(1)+'" y1="'+ly.toFixed(1)+'" x2="'+(px-26*Math.cos(angle)).toFixed(1)+'" y2="'+(py-26*Math.sin(angle)).toFixed(1)+'" stroke="'+acc+'" stroke-width="1.2" opacity=".4"/>';
+    const cid='pub-n-'+i;
+    clips+='<clipPath id="'+cid+'"><circle cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" r="26"/></clipPath>';
+    if(p.image){
+      defs+='<image href="'+p.image+'" x="'+(px-26).toFixed(1)+'" y="'+(py-26).toFixed(1)+'" width="52" height="52" clip-path="url(#'+cid+')" preserveAspectRatio="xMidYMid slice"/>';
+      nodes+='<circle cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" r="26" fill="none" stroke="'+acc+'" stroke-width="2" style="cursor:pointer" onclick="mmShowProject('+i+')"/>';
+    } else {
+      nodes+='<circle cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" r="26" fill="'+acc+'" opacity=".18" stroke="'+acc+'" stroke-width="1.5" style="cursor:pointer" onclick="mmShowProject('+i+')"/>';
+      nodes+='<text x="'+px.toFixed(1)+'" y="'+(py-3).toFixed(1)+'" text-anchor="middle" fill="'+acc+'" font-size="10" font-weight="600" style="pointer-events:none">'+pg+'%</text>';
+      nodes+='<text x="'+px.toFixed(1)+'" y="'+(py+10).toFixed(1)+'" text-anchor="middle" fill="'+acc+'" font-size="8.5" style="pointer-events:none">'+(p.name.length>9?p.name.slice(0,8)+'…':p.name)+'</text>';
+    }
+    nodes+='<circle cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" r="26" fill="transparent" style="cursor:pointer" onclick="mmShowProject('+i+')"/>';
+  });
+  wrap.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg"><defs>'+clips+'</defs>'+defs+lines+nodes+'</svg>';
+}
+
+function mmShowProject(idx){
+  const p=(D.mindmap_projects||[])[idx]; if(!p)return;
+  const pg=mmPct(p.tasks||[]); const acc=p.accent||MM_ACCENTS[idx%MM_ACCENTS.length];
+  const overlay=document.createElement('div'); overlay.className='mm-proj-overlay';
+  overlay.innerHTML=`<div class="mm-proj-box">
+    <button style="float:right;background:rgba(255,255,255,.08);border:none;color:#ccc;border-radius:7px;padding:4px 10px;font-size:.8rem;cursor:pointer" onclick="this.closest('.mm-proj-overlay').remove()">✕</button>
+    <h2>${esc(p.name)}</h2>
+    <div style="display:flex;align-items:center;gap:10px;margin:1rem 0">
+      <div class="mm-prog-bar"><div class="mm-prog-fill" style="width:${pg}%;background:${acc}"></div></div>
+      <span style="color:${acc};font-weight:700">${pg}%</span>
+    </div>
+    ${p.description?'<p style="color:#aaa;font-size:.86rem;line-height:1.6;margin-bottom:1rem">'+esc(p.description)+'</p>':''}
+    <div style="font-size:.78rem;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:.6rem">Tasks (${(p.tasks||[]).length})</div>
+    ${(p.tasks||[]).map((t,i)=>{
+      const tc=MM_PRI_COLOR[t.priority||'']||mmSc(+t.pct);
+      return `<div style="display:flex;align-items:center;gap:9px;padding:8px 11px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:5px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${tc};flex-shrink:0"></div>
+        <div style="flex:1;font-size:.88rem;font-weight:600;color:#fff">${esc(t.name)}</div>
+        <span style="font-size:.8rem;color:${tc};font-weight:700">${t.pct}%</span>
+      </div>`;
+    }).join('')}
+  </div></div>`;
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+// ══════════════════════════════════════════════
+//  CONTACT FORM
+// ══════════════════════════════════════════════
+async function submitContact(){
+  const name=document.getElementById('cf-name').value.trim();
+  const email=document.getElementById('cf-email').value.trim();
+  const phone=document.getElementById('cf-phone').value.trim();
+  const type=document.getElementById('cf-type').value;
+  const msg=document.getElementById('cf-msg').value.trim();
+  const alertEl=document.getElementById('contact-alert');
+  if(!name||!email||!msg||!email.includes('@')){
+    alertEl.className='alert-err'; alertEl.style.display='';
+    alertEl.textContent='Please fill in all required fields with a valid email.'; return;
+  }
+  try {
+    await db.collection('contacts').add({
+      name,email,phone,projectType:type,message:msg,
+      date:new Date().toISOString(), read:false
+    });
+    alertEl.className='alert-ok'; alertEl.style.display='';
+    alertEl.textContent='✅ Message sent! I\'ll be in touch soon.';
+    document.getElementById('cf-name').value='';
+    document.getElementById('cf-email').value='';
+    document.getElementById('cf-phone').value='';
+    document.getElementById('cf-type').value='';
+    document.getElementById('cf-msg').value='';
+  } catch(e){ alertEl.className='alert-err'; alertEl.style.display=''; alertEl.textContent='Error: '+e.message; }
+}
+
+// ══════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════
+function showPublic(){
+  document.getElementById('public-view').style.display='';
+  document.getElementById('admin-view').style.display='none';
+  document.getElementById('login-view').style.display='none';
+  document.getElementById('main-nav').style.display='';
+}
+function showAdmin(){
+  if(isAdmin){
+    document.getElementById('public-view').style.display='none';
+    document.getElementById('admin-view').style.display='';
+    document.getElementById('login-view').style.display='none';
+    document.getElementById('main-nav').style.display='none';
+    adminNav('dashboard');
+  } else {
+    document.getElementById('public-view').style.display='none';
+    document.getElementById('admin-view').style.display='none';
+    document.getElementById('login-view').style.display='';
+    document.getElementById('main-nav').style.display='none';
+  }
+}
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  const errEl=document.getElementById('login-err');
+  errEl.style.display='none';
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+    // auth state change will handle redirect
+  } catch(e){
+    errEl.style.display=''; errEl.textContent='Login failed: '+e.message;
+  }
+}
+async function adminLogout(){
+  await auth.signOut();
+  isAdmin=false; showPublic();
+}
+
+// ══════════════════════════════════════════════
+//  ADMIN NAV
+// ══════════════════════════════════════════════
+function adminNav(page){
+  currentAdminPage=page;
+  document.querySelectorAll('.s-link').forEach(l=>l.classList.remove('active'));
+  const sl=document.getElementById('sl-'+page); if(sl) sl.classList.add('active');
+  const main=document.getElementById('admin-main');
+  switch(page){
+    case 'dashboard': renderAdminDashboard(main); break;
+    case 'hero': renderAdminHero(main); break;
+    case 'about': renderAdminAbout(main); break;
+    case 'services': renderAdminServices(main); break;
+    case 'portfolio': renderAdminPortfolio(main); break;
+    case 'experience': renderAdminExperience(main); break;
+    case 'testimonials': renderAdminTestimonials(main); break;
+    case 'messages': renderAdminMessages(main); break;
+    case 'settings': renderAdminSettings(main); break;
+    case 'mindmap': renderAdminMindmap(main); break;
+    default: main.innerHTML='<p>Coming soon</p>';
+  }
+}
+
+// ══════════════════════════════════════════════
+//  ADMIN: DASHBOARD
+// ══════════════════════════════════════════════
+function renderAdminDashboard(el){
+  const unread=allContacts.filter(c=>!c.read).length;
+  el.innerHTML=`
+  <div class="a-topbar"><div><h1>Dashboard</h1><p>Welcome back! Here's your portfolio overview.</p></div></div>
+  <div class="stats-row">
+    <div class="sc"><div class="lbl">Services</div><div class="num">${(D.services||[]).length}</div></div>
+    <div class="sc"><div class="lbl">Projects</div><div class="num">${(D.projects||[]).length}</div></div>
+    <div class="sc"><div class="lbl">Testimonials</div><div class="num">${(D.testimonials||[]).length}</div></div>
+    <div class="sc"><div class="lbl">Messages</div><div class="num">${allContacts.length}<span style="font-size:.75rem;color:var(--red);margin-left:5px">${unread>0?unread+' unread':''}</span></div></div>
+    <div class="sc"><div class="lbl">Mind Map Projects</div><div class="num">${(D.mindmap_projects||[]).length}</div></div>
+  </div>
+  <div class="a-card"><h3>Quick Actions</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:9px">
+      <button class="btn btn-y" onclick="adminNav('hero')">✏️ Edit Hero</button>
+      <button class="btn btn-y" onclick="adminNav('portfolio')">🏗️ Add Project</button>
+      <button class="btn btn-y" onclick="adminNav('services')">🔧 Edit Services</button>
+      <button class="btn btn-y" onclick="adminNav('messages')">✉️ View Messages ${unread>0?'('+unread+' new)':''}</button>
+      <button class="btn btn-y" onclick="adminNav('mindmap')">🗺️ Mind Map</button>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════
+//  ADMIN: HERO
+// ══════════════════════════════════════════════
+function renderAdminHero(el){
+  const h=D.hero||{};
+  el.innerHTML=`
+  <div class="a-topbar"><div><h1>Hero Section</h1><p>Edit your homepage header and statistics.</p></div></div>
+  <div class="a-card"><h3>Hero Content</h3>
+  <div class="a-form">
+    <div class="fg"><label>Full Name</label><input id="h-name" value="${esc(h.name||'')}"></div>
+    <div class="fg"><label>Title / Role</label><input id="h-title" value="${esc(h.title||'')}"></div>
+    <div class="fg"><label>Tagline</label><textarea id="h-tagline">${esc(h.tagline||'')}</textarea></div>
+    <div class="f-row">
+      <div class="fg"><label>Primary Button Text</label><input id="h-btn1" value="${esc(h.btnPrimary||'')}"></div>
+      <div class="fg"><label>Secondary Button Text</label><input id="h-btn2" value="${esc(h.btnSecondary||'')}"></div>
+    </div>
+    <div class="f-row">
+      <div class="fg"><label>Years Experience</label><input type="number" id="h-yrs" value="${h.yearsExp||15}"></div>
+      <div class="fg"><label>Projects Done</label><input type="number" id="h-proj" value="${h.projectsDone||120}"></div>
+    </div>
+    <div class="f-row">
+      <div class="fg"><label>Happy Clients (%)</label><input type="number" id="h-clients" value="${h.happyClients||98}"></div>
+      <div class="fg"><label>Awards Won</label><input type="number" id="h-awards" value="${h.awardsWon||12}"></div>
+    </div>
+    <button class="btn btn-y" onclick="saveHero()">💾 Save Hero</button>
+  </div></div>
+  <div class="a-card"><h3>Hero Background Image</h3>
+    ${renderUploadZoneHtml('hero_bg','Hero background photo')}
+  </div>`;
+  initUploadZones();
+}
+async function saveHero(){
+  D.hero={
+    name:document.getElementById('h-name').value,
+    title:document.getElementById('h-title').value,
+    tagline:document.getElementById('h-tagline').value,
+    btnPrimary:document.getElementById('h-btn1').value,
+    btnSecondary:document.getElementById('h-btn2').value,
+    yearsExp:+document.getElementById('h-yrs').value,
+    projectsDone:+document.getElementById('h-proj').value,
+    happyClients:+document.getElementById('h-clients').value,
+    awardsWon:+document.getElementById('h-awards').value
+  };
+  await saveData(); renderHero();
+}
+
+// ══════════════════════════════════════════════
+//  ADMIN: ABOUT
+// ══════════════════════════════════════════════
+function renderAdminAbout(el){
+  const a=D.about||{};
+  el.innerHTML=`
+  <div class="a-topbar"><div><h1>About Section</h1><p>Edit your bio, specializations, and details.</p></div></div>
+  <div class="a-card"><h3>About Content</h3>
+  <div class="a-form">
+    <div class="fg"><label>Bio</label><textarea id="a-bio" rows="4">${esc(a.bio||'')}</textarea></div>
+    <div class="fg"><label>Specializations (comma separated)</label><input id="a-specs" value="${esc((a.specializations||[]).join(', '))}"></div>
+    <div class="f-row">
+      <div class="fg"><label>Location</label><input id="a-loc" value="${esc(a.location||'')}"></div>
+      <div class="fg"><label>License #</label><input id="a-lic" value="${esc(a.license||'')}"></div>
+    </div>
+    <div class="fg"><label>Availability</label><input id="a-avail" value="${esc(a.availability||'')}"></div>
+    <button class="btn btn-y" onclick="saveAbout()">💾 Save About</button>
+  </div></div>
+  <div class="a-card"><h3>Profile Photo</h3>
+    ${renderUploadZoneHtml('about_photo','Profile photo')}
+  </div>`;
+  initUploadZones();
+}
+async function saveAbout(){
+  D.about={
+    bio:document.getElementById('a-bio').value,
+    specializations:document.getElementById('a-specs').value.split(',').map(s=>s.trim()).filter(Boolean),
+    location:document.getElementById('a-loc').value,
+    license:document.getElementById('a-lic').value,
+    availability:document.getElementById('a-avail').value
+  };
+  await saveData(); renderAbout();
+}
+
+// ══════════════════════════════════════════════
+//  ADMIN: SERVICES
+// ══════════════════════════════════════════════
+function renderAdminServices(el){
+  el.innerHTML=`
+  <div class="a-topbar"><div><h1>Services</h1><p>Manage your service offerings.</p></div>
+  <button class="btn btn-y" onclick="openServiceModal(null)">+ Add Service</button></div>
+  <div id="srv-list">${renderServiceList()}</div>`;
+}
+function renderServiceList(){
+  return (D.services||[]).map(s=>`
+  <div class="a-card" style="margin-bottom:.8rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem">
+      <span style="font-weight:700">${esc(s.icon)} ${esc(s.name)}</span>
+      <div style="display:flex;gap:5px">
+        <button class="btn btn-gh btn-sm" onclick="openServiceModal(${s.id})">Edit</button>
+        <button class="btn btn-del btn-sm" onclick="deleteService(${s.id})">Del</button>
+      </div>
+    </div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:.8rem">${esc(s.desc)}</p>
+    ${renderUploadZoneHtml('service_'+s.id,'Service photo')}
+  </div>`).join('');
+}
+function openServiceModal(id){
+  const s=id?(D.services||[]).find(x=>x.id===id)||{}:{};
+  showModal(`<h3>${id?'Edit':'New'} Service</h3>
+  <div class="a-form">
+    <div class="f-row">
+      <div class="fg"><label>Icon (emoji)</label><input id="sm-icon" value="${esc(s.icon||'🔧')}"></div>
+      <div class="fg"><label>Name</label><input id="sm-name" value="${esc(s.name||'')}"></div>
+    </div>
+    <div class="fg"><label>Description</label><textarea id="sm-desc">${esc(s.desc||'')}</textarea></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-gh" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-y" onclick="saveService(${id||'null'})">Save</button>
+  </div>`);
+}
+async function saveService(id){
+  const icon=document.getElementById('sm-icon').value;
+  const name=document.getElementById('sm-name').value;
+  const desc=document.getElementById('sm-desc').value;
+  if(!name){toast('Name required','#E24B4A');return;}
+  if(id){
+    const idx=(D.services||[]).findIndex(x=>x.id===id);
+    if(idx>-1) D.services[idx]={...D.services[idx],icon,name,desc};
+  } else {
+    const newId=++D._nid;
+    if(!D.services)D.services=[];
+    D.services.push({id:newId,icon,name,desc});
+  }
+  closeModal(); await saveData(); renderServices();
+  const el=document.getElementById('admin-main'); renderAdminServices(el); initUploadZones();
+}
+async function deleteService(id){
+  if(!confirm('Delete this service?'))return;
+  D.services=(D.services||[]).filter(x=>x.id!==id);
+  await saveData(); renderServices();
+  const el=document.getElementById('admin-main'); renderAdminServices(el); initUploadZones();
+}
+
+// ══════════════════════════════════════════════
+//  ADMIN: PORTFOLIO
+// ══════════════════════════════════════════════
+const PROJ_CATS=['Residential','Renovation','Carpentry','Masonry','Roofing','Commercial','Other'];
+function renderAdminPortfolio(el){
+  el.innerHTML=`
+  <div class="a-topbar"><div><h1>Portfolio</h1><p>Add and manage your projects.</p></div>
+  <button class="btn btn-y" onclick="openProjModal(null)">+ New Project</button></div>
+  <div id="proj-admin-list">${renderProjAdminList()}</div>`;
+}
+function renderProjAdminList(){
+  if(!(D.projects||[]).length) return '<div class="empty-st">No projects yet. Click "+ New Project" to add one.</div>';
+  return (D.projects||[]).map(p=>`
+  <div class="a-card" style="margin-bottom:.8rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem">
+      <div>
+        <strong>${esc(p.title)}</strong>
+        <span class="badge bdg-y" style="margin-left:7px">${esc(p.category||'')}</span>
+        <span style="font-size:.78rem;color:var(--muted);margin-left:5px">📅 ${esc(p.year||'')}</span>
+      </div>
+      <div style="display:flex;gap:5px">
+        <button class="btn btn-gh btn-sm" onclick="openProjModal(${p.id})">Edit</button>
+        <button class="btn btn-del btn-sm" onclick="deleteProject(${p.id})">Del</button>
+      </div>
+    </div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:.8rem">${esc(p.desc||'')}</p>
+    ${renderUploadZoneHtml('project_'+p.id,'Project photo')}
+  </div>`).join('');
+}
+function openProjModal(id){
+  const p=id?(D.projects||[]).find(x=>x.id===id)||{}:{};
+  showModal(`<h3>${id?'Edit':'New'} Project</h3>
+  <div class="a-form">
+    <div class="fg"><label>Title *</label><input id="pm-title" value="${esc(p.title||'')}"></div>
+    <div class="f-row">
+      <div class="fg"><label>Category</label><select id="pm-cat">${PROJ_CATS.map(c=>'<option'+(c===p.category?' selected':'')+'>'+c+'</option>').join('')}</select></div>
+      <div class="fg"><label>Year</label><input id="pm-year" value="${esc(p.year||new Date().getFullYear())}"></div>
+    </div>
+    <div class="fg"><label>Description</label><textarea id="pm-desc">${esc(p.desc||'')}</textarea></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-gh" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-y" onclick="saveProject(${id||'null'})">Save</button>
+  </div>`);
+}
+async function saveProject(id){
+  const title=document.getElementById('pm-title').value;
+  const cat=document.getElementById('pm-cat').value;
+  const year=document.getElementById('pm-year').value;
+  const desc=document.getElementById('pm-desc').value;
+  if(!title){toast('Title required','#E24B4A');return;}
+  if(id){
+    const idx=(D.projects||[]).findIndex(x=>x.id===id);
+    if(idx>-1) D.projects[idx]={...D.projects[idx],title,category:cat,year,desc};
+  } else {
+    const newId=++D._nid;
+    if(!D.projects)D.projects=[];
+    D.projects.push({id:newId,title,category:cat,year,desc});
+  }
+  closeModal(); await saveData(); renderProjects();
+  const el=document.getElementById('admin-main'); renderAdminPortfolio(el); initUploadZones();
+}
+async function deleteProject(id){
+  if(!confirm('Delete this project?'))return;
+  D.projects=(D.projects||[]).filter(x=>x.id!==id);
+  await saveData(); renderProjects();
+  const el=document.getElementById('admin-main'); renderAdminPortfolio(el); initUploadZones();
+}
+
+// ══════════════════════════════════════════════
+//  ADMIN: EXPERIENCE
+// ══════════════════════════════════════════════
+function renderAdminExperience(el){
+  el.innerHTML=`
+  <div class="a-topbar"><div><h1>Experience</h1><p>Manage your career timeline.</p></div>
+  <button class="btn btn-y" onclick="openExpModal(null)">+ Add Position</button></div>
+  <div class="a-card"><table class="a-tbl">
+    <thead><tr><th>Year</th><th>Title</th><th>Company</th><th></th></tr></thead>
+    <tbody id="exp-tbody">${(D.experience||[]).map(e=>`
+    <tr>
+      <td>${esc(e.year)}</td><td><strong>${esc(e.title)}</strong></td><td>${esc(e.company)}</td>
+      <td><div style="display:flex;gap:5px">
+        <button class="btn btn-gh btn-sm" onclick="openExpModal(${e.id})">Edit</button>
+        <button class="btn btn-del btn-sm" onclick="deleteExp(${e.id})">Del</button>
+      </div></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+function openExpModal(id){
+  const e=id?(D.experience||[]).find(x=>x.id===id)||{}:{};
+  showModal(`<h3>${id?'Edit':'New'} Experience</h3>
+  <div class="a-form">
+    <div class="f-row">
+      <div class="fg"><label>Year Range</label><input id="em-year" value="${esc(e.year||'')}" placeholder="e.g. 2018–Present"></div>
+      <div class="fg"><label>Job Title</label><input id="em-title" value="${esc(e.title||'')}"></div>
+    </div>
+    <div class="fg"><label>Company</label><input id="em-co" value="${esc(e.company||'')}"></div>
+    <div class="fg"><label>Description</label><textarea id="em-desc">${esc(e.desc||'')}</textarea></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-gh" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-y" onclick="saveExp(${id||'null'})">Save</button>
+  </div>`);
+}
+async function saveExp(id){
+  const year=document.getElementById('em-year').value;
+  const title=document.getElementById('em-title').value;
+  const company=document.getElementById('em-co').value;
+  const desc=document.getElementById('em-desc').value;
+  if(!title){toast('Title required','#E24B4A');return;}
+  if(id){
+    const idx=(D.experience||[]).findIndex(x=>x.id===id);
+    if(idx>-1) D.experience[idx]={...D.experience[idx],year,title,company,desc};
+  } else {
+    const newId=++D._nid;
+    if(!D.experience)D.experience=[];
+    D.experience.push({id:newId,year,title,company,desc});
+  }
+  closeModal(); await saveData(); renderExperience();
+  renderAdminExperience(document.getElementById('admin-main'));
+}
+async function deleteExp(id){
+  if(!confirm('Delete?'))return;
+  D.experience=(D.experience||[]).filter(x=>x.id!==id);
+  await saveData(); renderExperience();
+  renderAdminExperience(document.getElementById('admin-main'));
+}
+
+// ══════════════════════════════════════════════
+//  ADMIN: TESTIMONIALS
+// ══════════════════════════════════════════════
+function renderAdminTestimonials(el){
+  el.innerHTML=`
+  <div class="a-topbar"><div><h1>Testimonials</h1><p>Manage client reviews.</p></div>
+  <button class="btn btn-y" onclick="openTestiModal(null)">+ Add Review</button></div>
+  <div id="testi-admin-list">${renderTestiAdminList()}</div>`;
+}
+function renderTestiAdminList(){
+  return (D.testimonials||[]).map(t=>`
+  <div class="a-card" style="margin-bottom:.8rem">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="stars" style="font-size:.85rem">${stars(t.rating||5)}</div>
+        <strong>${esc(t.name)}</strong> <span style="color:var(--muted);font-size:.82rem">${esc(t.role||'')}</span>
+        <p style="color:var(--muted);font-size:.84rem;margin-top:.4rem">"${esc(t.review)}"</p>
+      </div>
+      <div style="display:flex;gap:5px;flex-shrink:0;margin-left:1rem">
+        <button class="btn btn-gh btn-sm" onclick="openTestiModal(${t.id})">Edit</button>
+        <button class="btn btn-del btn-sm" onclick="deleteTesti(${t.id})">Del</button>
+      </div>
+    </div>
+  </div>`).join('');
+}
+let _editRating=5;
+function openTestiModal(id){
+  const t=id?(D.testimonials||[]).find(x=>x.id===id)||{}:{};
+  _editRating=t.rating||5;
+  const starHtml=[1,2,3,4,5].map(i=>'<span class="star'+(i<=_editRating?' on':'')+'" onclick="setRating('+i+')" id="star-'+i+'">★</span>').join('');
+  showModal(`<h3>${id?'Edit':'New'} Testimonial</h3>
+  <div class="a-form">
+    <div class="f-row">
+      <div class="fg"><label>Name</label><input id="tm-name" value="${esc(t.name||'')}"></div>
+      <div class="fg"><label>Role</label><input id="tm-role" value="${esc(t.role||'')}"></div>
+    </div>
+    <div class="fg"><label>Review</label><textarea id="tm-review">${esc(t.review||'')}</textarea></div>
+    <div class="fg"><label>Rating</label><div id="stars-wrap">${starHtml}</div></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-gh" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-y" onclick="saveTesti(${id||'null'})">Save</button>
+  </div>`);
+}
+function setRating(n){
+  _editRating=n;
+  [1,2,3,4,5].forEach(i=>{ const s=document.getElementById('star-'+i); if(s) s.className='star'+(i<=n?' on':''); });
+}
+async function saveTesti(id){
+  const name=document.getElementById('tm-name').value;
+  const role=document.getElementById('tm-role').value;
+  const review=document.getElementById('tm-review').value;
+  if(!name||!review){toast('Name and review required','#E24B4A');return;}
+  if(id){
+    const idx=(D.testimonials||[]).findIndex(x=>x.id===id);
+    if(idx>-1) D.testimonials[idx]={...D.testimonials[idx],name,role,review,rating:_editRating};
+  } else {
+    const newId=++D._nid;
+    if(!D.testimonials)D.testimonials=[];
+    D.testimonials.push({id:newId,name,role,review,rating:_editRating});
+  }
+  closeModal(); await saveData(); renderTestimonials();
+  renderAdminTestimonials(document.getElementById('admin-main'));
+}
+async function deleteTesti(id){
+  if(!confirm('Delete?'))return;
+  D.testimonials=(D.testimonials||[]).filter(x=>x.id!==id);
+  await saveData(); renderTestimonials();
+  renderAdminTestimonials(document.getElementById('admin-main'));
+}
+
+// ══════════════════════════════════════════════
+//  ADMIN: MESSAGES
+// ══════════════════════════════════════════════
+async function renderAdminMessages(el){
+  el.innerHTML='<div class="a-topbar"><div><h1>Messages</h1><p>Contact form submissions.</p></div></div><div id="msg-list"><div style="text-align:center;padding:2rem;color:var(--muted)">Loading...</div></div>';
+  try {
+    const snap=await db.collection('contacts').orderBy('date','desc').get();
+    allContacts=snap.docs.map(d=>({...d.data(),_fbid:d.id}));
+    updateUnreadBadge();
+    renderMsgList();
+  } catch(e){ document.getElementById('msg-list').innerHTML='<div class="empty-st">Error loading messages: '+esc(e.message)+'</div>'; }
+}
+function renderMsgList(){
+  const el=document.getElementById('msg-list');
+  if(!el)return;
+  if(!allContacts.length){ el.innerHTML='<div class="empty-st">No messages yet.</div>'; return; }
+  el.innerHTML=allContacts.map(m=>`
+  <div class="msg-card${m.read?'':' unread'}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
+      <div>
+        <strong>${esc(m.name)}</strong>
+        <span class="badge${m.read?' bdg-g':' bdg-y'}" style="margin-left:7px">${m.read?'Read':'New'}</span>
+        ${m.projectType?'<span class="badge bdg-b" style="margin-left:5px">'+esc(m.projectType)+'</span>':''}
+      </div>
+      <div style="display:flex;gap:5px">
+        ${!m.read?'<button class="btn btn-gh btn-sm" onclick="markMsgRead(\''+m._fbid+'\')">Mark Read</button>':''}
+        <button class="btn btn-del btn-sm" onclick="deleteMsg('${m._fbid}')">Delete</button>
+      </div>
+    </div>
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:.6rem">${esc(m.email)}${m.phone?' · '+esc(m.phone):''} · ${esc((m.date||'').substring(0,10))}</div>
+    <p style="font-size:.86rem;color:var(--text);line-height:1.6">${esc(m.message)}</p>
+  </div>`).join('');
+}
+async function markMsgRead(fbid){
+  await db.collection('contacts').doc(fbid).update({read:true});
+  const c=allContacts.find(x=>x._fbid===fbid); if(c)c.read=true;
+  updateUnreadBadge(); renderMsgList();
+}
+async function deleteMsg(fbid){
+  if(!confirm('Delete this message?'))return;
+  await db.collection('contacts').doc(fbid).delete();
+  allContacts=allContacts.filter(x=>x._fbid!==fbid);
+  updateUnreadBadge(); renderMsgList();
+}
+function updateUnreadBadge(){
+  const n=allContacts.filter(c=>!c.read).length;
+  const badge=document.getElementById('unread-badge');
+  if(badge){ badge.style.display=n?'':'none'; badge.textContent=n; }
+}
+
+// ══════════════════════════════════════════════
+//  ADMIN: SETTINGS
+// ══════════════════════════════════════════════
+function renderAdminSettings(el){
+  const s=D.settings||{};
+  el.innerHTML=`
+  <div class="a-topbar"><div><h1>Settings</h1><p>Contact info and social links.</p></div></div>
+  <div class="a-card"><h3>Contact Information</h3>
+  <div class="a-form">
+    <div class="f-row">
+      <div class="fg"><label>Phone</label><input id="st-phone" value="${esc(s.phone||'')}"></div>
+      <div class="fg"><label>Email</label><input id="st-email" value="${esc(s.email||'')}"></div>
+    </div>
+    <div class="f-row">
+      <div class="fg"><label>WhatsApp (with country code)</label><input id="st-wa" value="${esc(s.whatsapp||'')}"></div>
+      <div class="fg"><label>Location</label><input id="st-loc" value="${esc(s.location||'')}"></div>
+    </div>
+    <div class="fg"><label>Facebook URL</label><input id="st-fb" value="${esc(s.facebook||'')}"></div>
+    <div class="fg"><label>Instagram URL</label><input id="st-ig" value="${esc(s.instagram||'')}"></div>
+    <div class="fg"><label>LinkedIn URL</label><input id="st-li" value="${esc(s.linkedin||'')}"></div>
+    <div class="fg"><label>YouTube URL</label><input id="st-yt" value="${esc(s.youtube||'')}"></div>
+    <button class="btn btn-y" onclick="saveSettings()">💾 Save Settings</button>
+  </div></div>`;
+}
+async function saveSettings(){
+  D.settings={
+    phone:document.getElementById('st-phone').value,
+    email:document.getElementById('st-email').value,
+    whatsapp:document.getElementById('st-wa').value,
+    location:document.getElementById('st-loc').value,
+    facebook:document.getElementById('st-fb').value,
+    instagram:document.getElementById('st-ig').value,
+    linkedin:document.getElementById('st-li').value,
+    youtube:document.getElementById('st-yt').value
+  };
+  await saveData(); renderContact();
+}
+
+// ══════════════════════════════════════════════
+//  ADMIN: MIND MAP
+// ══════════════════════════════════════════════
+function renderAdminMindmap(el){
+  el.innerHTML=`
+  <div class="a-topbar"><div><h1>Mind Map Projects</h1><p>Manage visual project tracking.</p></div>
+  <button class="btn btn-y" onclick="openMmModal(null)">+ New Project</button></div>
+  <div id="mm-admin-list">${renderMmList()}</div>`;
+}
+function renderMmList(){
+  const projs=D.mindmap_projects||[];
+  if(!projs.length) return '<div class="empty-st">No mind map projects yet.</div>';
+  return projs.map(p=>{
+    const pg=mmPct(p.tasks||[]);
+    const acc=p.accent||MM_ACCENTS[0];
+    return `<div class="a-card" style="margin-bottom:.8rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:12px;height:12px;border-radius:50%;background:${acc};flex-shrink:0"></div>
+        <strong>${esc(p.name)}</strong>
+        <span style="font-size:.8rem;color:var(--muted)">${(p.tasks||[]).length} tasks · ${pg}% done</span>
+      </div>
+      <div style="display:flex;gap:5px">
+        <button class="btn btn-gh btn-sm" onclick="openMmModal(${p.id})">Edit</button>
+        <button class="btn btn-del btn-sm" onclick="deleteMmProject(${p.id})">Delete</button>
+      </div>
+    </div>
+    ${p.description?'<p style="font-size:.82rem;color:var(--muted);margin-bottom:.8rem">'+esc(p.description)+'</p>':''}
+    <div style="background:rgba(0,0,0,.04);border-radius:8px;height:6px;overflow:hidden">
+      <div style="height:100%;background:${acc};width:${pg}%;border-radius:8px"></div>
+    </div>
+  </div>`;
+  }).join('');
+}
+let _mmEditAccent=MM_ACCENTS[0];
+function openMmModal(id){
+  const p=id?(D.mindmap_projects||[]).find(x=>x.id===id)||null:null;
+  _mmEditAccent=(p&&p.accent)||MM_ACCENTS[0];
+  const swatches=MM_ACCENTS.map(c=>'<div onclick="setMmAccent(\''+c+'\',this)" style="width:22px;height:22px;border-radius:50%;background:'+c+';cursor:pointer;border:2.5px solid '+(c===_mmEditAccent?'var(--dark)':'transparent')+'"></div>').join('');
+  const taskRows=(p&&p.tasks||[]).map((t,i)=>`
+  <div class="trow" style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+    <input type="text" value="${esc(t.name)}" placeholder="Task name" style="flex:1;padding:6px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:.85rem;background:var(--light)">
+    <input type="number" min="0" max="100" value="${t.pct||0}" style="width:58px;padding:6px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.85rem;background:var(--light)">
+    <select style="padding:6px 7px;border:1.5px solid var(--border);border-radius:7px;font-size:.82rem;background:var(--light)">
+      <option value="">—</option>
+      <option value="high" ${t.priority==='high'?'selected':''}>🔴</option>
+      <option value="mid" ${t.priority==='mid'?'selected':''}>🟡</option>
+      <option value="low" ${t.priority==='low'?'selected':''}>🟢</option>
+    </select>
+    <button onclick="this.closest('.trow').remove()" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);padding:0 3px">×</button>
+  </div>`).join('');
+  showModal(`<h3>${p?'Edit':'New'} Mind Map Project</h3>
+  <div class="a-form">
+    <div class="fg"><label>Project Name *</label><input id="mm-pname" value="${esc(p?p.name:'')}"></div>
+    <div class="fg"><label>Description</label><textarea id="mm-pdesc" rows="2">${esc(p&&p.description?p.description:'')}</textarea></div>
+    <div class="fg"><label>Accent Color</label><div id="mm-swatches" style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">${swatches}</div></div>
+    <div class="fg"><label>Tasks</label>
+      <div id="mm-task-rows" style="max-height:220px;overflow-y:auto">${taskRows}</div>
+      <button type="button" onclick="addMmTaskRow()" class="btn btn-gh btn-sm" style="margin-top:6px">+ Add Task</button>
+    </div>
+  </div>
+  <div class="modal-foot">
+    ${p?'<button class="btn btn-del" onclick="deleteMmProject('+p.id+');closeModal()">Delete</button>':''}
+    <button class="btn btn-gh" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-y" onclick="saveMmProject(${p?p.id:'null'})">Save</button>
+  </div>`);
+}
+function setMmAccent(color, el){
+  _mmEditAccent=color;
+  document.querySelectorAll('#mm-swatches > div').forEach(s=>s.style.borderColor='transparent');
+  if(el) el.style.borderColor='var(--dark)';
+}
+function addMmTaskRow(){
+  const wrap=document.getElementById('mm-task-rows'); if(!wrap)return;
+  const div=document.createElement('div'); div.className='trow';
+  div.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:6px';
+  div.innerHTML='<input type="text" placeholder="Task name" style="flex:1;padding:6px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:.85rem;background:var(--light)">'
+    +'<input type="number" min="0" max="100" value="0" style="width:58px;padding:6px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.85rem;background:var(--light)">'
+    +'<select style="padding:6px 7px;border:1.5px solid var(--border);border-radius:7px;font-size:.82rem;background:var(--light)"><option value="">—</option><option value="high">🔴</option><option value="mid">🟡</option><option value="low">🟢</option></select>'
+    +'<button onclick="this.closest(\'.trow\').remove()" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);padding:0 3px">×</button>';
+  wrap.appendChild(div);
+}
+async function saveMmProject(id){
+  const name=document.getElementById('mm-pname').value.trim();
+  if(!name){toast('Project name required','#E24B4A');return;}
+  const desc=document.getElementById('mm-pdesc').value;
+  const rows=document.querySelectorAll('#mm-task-rows .trow');
+  const tasks=Array.from(rows).map(r=>{
+    const inputs=r.querySelectorAll('input,select');
+    return {name:inputs[0].value,pct:+inputs[1].value||0,priority:inputs[2].value,images:[],note:''};
+  }).filter(t=>t.name);
+  if(!D.mindmap_projects)D.mindmap_projects=[];
+  if(id){
+    const idx=D.mindmap_projects.findIndex(x=>x.id===id);
+    if(idx>-1) D.mindmap_projects[idx]={...D.mindmap_projects[idx],name,description:desc,accent:_mmEditAccent,tasks};
+  } else {
+    const newId=++D._nid;
+    D.mindmap_projects.push({id:newId,name,description:desc,accent:_mmEditAccent,tasks:[...tasks]});
+  }
+  closeModal(); await saveData(); renderMindmap();
+  renderAdminMindmap(document.getElementById('admin-main'));
+}
+async function deleteMmProject(id){
+  if(!confirm('Delete this mind map project?'))return;
+  D.mindmap_projects=(D.mindmap_projects||[]).filter(x=>x.id!==id);
+  await saveData(); renderMindmap();
+  renderAdminMindmap(document.getElementById('admin-main'));
+}
+
+// ══════════════════════════════════════════════
+//  IMAGE UPLOAD (Firebase Storage)
+// ══════════════════════════════════════════════
+function renderUploadZoneHtml(key, label){
+  const url=imgUrl(key);
+  return `<div class="img-upload-wrap${url?' has-img':''}" id="uz-${key}" onclick="document.getElementById('fi-${key}').click()">
+    ${url?'<img src="'+esc(url)+'" alt="'+esc(label)+'"><div class="up-hint">Click to change</div>':'<div class="up-icon">📷</div><div class="up-hint">Click to upload '+esc(label)+'</div>'}
+    <input type="file" id="fi-${key}" accept="image/*" style="display:none" onchange="uploadImg('${key}',this)">
+  </div>
+  ${url?'<button class="img-clear-btn" onclick="event.stopPropagation();deleteImg(\''+key+'\')">✕ Remove image</button>':''}`;
+}
+function initUploadZones(){} // zones handle themselves via onclick
+
+async function uploadImg(key, input){
+  const file=input.files[0]; if(!file)return;
+  const ext=file.name.split('.').pop().toLowerCase();
+  const allowed=['jpg','jpeg','png','webp','gif'];
+  if(!allowed.includes(ext)){toast('Only images allowed','#E24B4A');return;}
+  toast('Uploading...');
+  try {
+    const ref=storage.ref('uploads/'+key+'_'+Date.now()+'.'+ext);
+    await ref.put(file);
+    const url=await ref.getDownloadURL();
+    if(!D.images)D.images={};
+    D.images[key]=url;
+    await saveData();
+    // Rebuild the entire upload zone so all event bindings are fresh
+    const wrap=document.getElementById('uz-'+key);
+    if(wrap){
+      const parent=wrap.parentElement;
+      parent.innerHTML=renderUploadZoneHtml(key, key.replace(/_/g,' '));
+    }
+    renderPublic();
+    toast('Image uploaded ✅');
+  } catch(e){ toast('Upload failed: '+e.message,'#E24B4A'); }
+}
+async function deleteImg(key){
+  if(!confirm('Remove this image?'))return;
+  const url=D.images&&D.images[key];
+  if(url){ try { await storage.refFromURL(url).delete(); } catch(e){} }
+  if(D.images) delete D.images[key];
+  await saveData(); renderPublic();
+  toast('Image removed');
+  // Re-render current admin page only if admin panel is visible
+  if(document.getElementById('admin-view').style.display!=='none'){
+    adminNav(currentAdminPage);
+  }
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+auth.onAuthStateChanged(async function(user){
+  if(user){
+    isAdmin=true;
+    const label=document.getElementById('admin-email-label');
+    if(label) label.textContent=user.email||'admin';
+    if(document.getElementById('login-view').style.display!=='none'){
+      showAdmin();
+    }
+  } else {
+    isAdmin=false;
+  }
+});
+
+(async function init(){
+  await loadData();
+  renderPublic();
+  document.getElementById('loading-view').style.display='none';
+  document.getElementById('main-nav').style.display='';
+  showPublic();
+  window.addEventListener('resize', renderMindmap);
+})();
+</script>
+</body>
+</html>
