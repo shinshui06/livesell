@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Shop — Pick your shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500&family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --seam:#0A0A0A;
+    --marquee:#E8A33D;
+    /* left — Drip Live */
+    --live-bg:#0C0C0F;
+    --live-surface:#141417;
+    --live-accent:#C8FF3E;
+    --live-red:#FF3B3B;
+    --live-text:#F2F2F5;
+    --live-text2:#9999A8;
+    --font-head:'Syne',sans-serif;
+    --font-body:'DM Sans',sans-serif;
+    /* right — Printhouse */
+    --print-bg:#F7F3EA;
+    --print-ink:#221F1B;
+    --print-ink-soft:#6B655B;
+    --print-red:#B8402A;
+    --print-blue:#2B4A52;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --sans:'IBM Plex Sans',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;background:var(--seam);}
+  body{overflow:hidden;}
+
+  .marquee{
+    position:fixed;top:0;left:0;right:0;height:64px;z-index:10;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    background:var(--seam);
+    border-bottom:1px solid #1c1c1c;
+    font-family:var(--font-head);
+  }
+  .marquee .bulb{width:5px;height:5px;border-radius:50%;background:var(--marquee);
+    box-shadow:0 0 6px 1px var(--marquee);}
+  .marquee h1{
+    color:#EFE9DC;font-size:15px;font-weight:800;letter-spacing:.16em;
+    text-transform:uppercase;margin:0;
+  }
+  .marquee .sub{
+    color:#6b6a63;font-family:var(--sans);font-size:11.5px;letter-spacing:.02em;
+    margin-left:6px;
+  }
+
+  .split{
+    display:flex;flex-direction:row;height:100%;padding-top:64px;
+  }
+  @media(max-width:760px){ .split{flex-direction:column;} body{overflow-y:auto;overflow-x:hidden;height:auto;min-height:100%;} .panel{min-height:calc((100vh - 64px));} }
+
+  .panel{
+    position:relative;flex:1;display:flex;flex-direction:column;
+    justify-content:flex-end;padding:8vh 6vw;text-decoration:none;
+    transition:flex .5s cubic-bezier(.2,.7,.2,1);
+    cursor:pointer;overflow:hidden;
+  }
+  .split:hover .panel{flex:1;}
+  .split .panel:hover{flex:1.35;}
+
+  .panel .eyebrow{font-size:12px;margin:0 0 14px;}
+  .panel h2{margin:0 0 14px;font-weight:800;line-height:0.95;}
+  .panel p.desc{margin:0 0 30px;max-width:34ch;}
+  .enter{
+    display:inline-flex;align-items:center;gap:10px;width:fit-content;
+    text-decoration:none;font-weight:600;padding:13px 22px;
+  }
+
+  /* ---- LEFT: DRIP LIVE ---- */
+  .panel-live{
+    background:
+      radial-gradient(120% 90% at 15% 100%, rgba(200,255,62,0.10), transparent 60%),
+      var(--live-bg);
+    color:var(--live-text);
+    border-right:1px solid #1a1a1e;
+  }
+  .panel-live .tag{
+    font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--live-red);
+    display:flex;align-items:center;gap:7px;margin-bottom:18px;
+  }
+  .panel-live .tag .dot{width:7px;height:7px;border-radius:50%;background:var(--live-red);
+    box-shadow:0 0 8px 1px var(--live-red);}
+  .panel-live h2{font-family:var(--font-head);color:var(--live-text);font-size:clamp(34px,6vw,58px);}
+  .panel-live h2 span{color:var(--live-accent);}
+  .panel-live p.desc{font-family:var(--font-body);color:var(--live-text2);font-size:15px;line-height:1.55;}
+  .panel-live .enter{font-family:var(--font-body);background:var(--live-accent);color:#0C0C0F;border-radius:2px;}
+  .panel-live .enter:hover{background:#d8ff6e;}
+  .panel-live .grid-lines{
+    position:absolute;inset:0;opacity:.5;pointer-events:none;
+    background-image:linear-gradient(#1c1c21 1px, transparent 1px);
+    background-size:100% 42px;
+    mask-image:linear-gradient(to top, black, transparent 75%);
+  }
+
+  /* ---- RIGHT: PRINTHOUSE ---- */
+  .panel-print{
+    background:
+      repeating-linear-gradient(180deg, transparent, transparent 39px, rgba(0,0,0,.025) 40px),
+      var(--print-bg);
+    color:var(--print-ink);
+  }
+  .panel-print .tag{
+    font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--print-ink-soft);
+    margin-bottom:18px;
+  }
+  .panel-print .tag .mark{background:var(--print-ink);color:var(--print-bg);padding:2px 6px;margin-right:8px;}
+  .panel-print h2{font-family:var(--mono);color:var(--print-ink);font-size:clamp(30px,5.4vw,50px);letter-spacing:-.01em;}
+  .panel-print p.desc{font-family:var(--sans);color:var(--print-ink-soft);font-size:15px;line-height:1.55;}
+  .panel-print .enter{font-family:var(--mono);background:var(--print-ink);color:var(--print-bg);border:1.5px solid var(--print-ink);}
+  .panel-print .enter:hover{background:#3a352c;}
+  .panel-print .stamp-corner{
+    position:absolute;top:8vh;right:6vw;font-family:var(--mono);font-weight:700;font-size:11px;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--print-red);
+    border:2px solid var(--print-red);padding:3px 10px;transform:rotate(4deg);
+  }
+
+  .enter svg{transition:transform .2s;}
+  .panel:hover .enter svg{transform:translateX(3px);}
+</style>
+</head>
+<body>
+
+  <div class="marquee">
+    <span class="bulb"></span>
+    <h1>Digital Shop</h1>
+    <span class="sub">— pick your shop</span>
+  </div>
+
+  <div class="split">
+
+    <a class="panel panel-live" href="drip.html">
+      <div class="grid-lines"></div>
+      <div class="tag"><span class="dot"></span>LIVE SELLING</div>
+      <h2>Drip<br><span>Live</span></h2>
+      <p class="desc">Shop drops straight from the livestream — shirts, stock counts, and sales tracked in real time.</p>
+      <span class="enter">Enter shop
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
+    </a>
+
+    <a class="panel panel-print" href="print-shop-system.html">
+      <div class="stamp-corner">Open</div>
+      <div class="tag"><span class="mark">No.001</span>PRINT &amp; COPY</div>
+      <h2>Printhouse</h2>
+      <p class="desc">Upload a file, pick your paper and copies, pay by GCash, and track your order slip to pickup.</p>
+      <span class="enter">Enter shop
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
+    </a>
+
+  </div>
+
+</body>
+</html>
