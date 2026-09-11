@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRINTHOUSE — Order Slip System</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CjxyZWN0IHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgcng9IjQiIGZpbGw9IiNGN0YzRUEiLz4KPHJlY3QgeD0iMSIgeT0iMSIgd2lkdGg9IjMwIiBoZWlnaHQ9IjMwIiByeD0iMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjIxRjFCIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8dGV4dCB4PSIxNiIgeT0iMjMiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLCAnVGltZXMgTmV3IFJvbWFuJywgc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMyMjFGMUIiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlA8L3RleHQ+CjxyZWN0IHg9IjIxIiB5PSIzIiB3aWR0aD0iOCIgaGVpZ2h0PSI1IiBmaWxsPSIjQjg0MDJBIiB0cmFuc2Zvcm09InJvdGF0ZSg4IDI1IDUuNSkiLz4KPC9zdmc+">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F3EA;
+    --paper-dark:#ECE5D6;
+    --ink:#221F1B;
+    --ink-soft:#6B655B;
+    --stamp-red:#B8402A;
+    --tray-blue:#2B4A52;
+    --ok-green:#3E7A57;
+    --warn-amber:#A66A16;
+    --line:#D8CFBC;
+    --white:#FFFDF8;
+    --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans:'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      repeating-linear-gradient(180deg, transparent, transparent 39px, rgba(0,0,0,0.02) 40px),
+      var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    min-height:100vh;
+    padding:28px 16px 60px;
+  }
+  .wrap{max-width:960px;margin:0 auto;}
+
+  /* Header */
+  .masthead{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:22px;border-bottom:3px solid var(--ink);padding-bottom:14px;}
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand .mark{font-family:var(--mono);font-weight:700;font-size:13px;background:var(--ink);color:var(--paper);padding:4px 8px;letter-spacing:0.04em;}
+  .brand h1{font-family:var(--mono);font-size:26px;margin:0;font-weight:700;letter-spacing:-0.01em;}
+  .brand .sub{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-top:2px;}
+
+  .role-tabs{display:flex;gap:6px;}
+  .role-tabs button{
+    font-family:var(--mono);font-size:12.5px;font-weight:600;
+    background:transparent;border:1.5px solid var(--ink);color:var(--ink);
+    padding:9px 14px;cursor:pointer;transition:background .15s,color .15s;
+  }
+  .role-tabs button.active{background:var(--ink);color:var(--paper);}
+  .role-tabs button:hover:not(.active){background:var(--paper-dark);}
+
+  /* Ticket / card shell */
+  .ticket{
+    background:var(--white);
+    border:1.5px solid var(--ink);
+    position:relative;
+    padding:26px;
+    margin-bottom:20px;
+  }
+  .ticket::before{
+    content:"";position:absolute;top:-1px;left:22px;right:22px;height:0;
+    border-top:2px dashed var(--line);
+  }
+  .ticket-title{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin:0 0 4px;}
+  .ticket h2{font-family:var(--mono);font-size:20px;margin:0 0 18px;font-weight:700;}
+
+  label{display:block;font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-bottom:6px;letter-spacing:.02em;}
+  input[type=text],input[type=email],input[type=number],select,textarea{
+    width:100%;font-family:var(--sans);font-size:14.5px;color:var(--ink);
+    border:1.5px solid var(--line);background:var(--paper);
+    padding:10px 12px;margin-bottom:16px;
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--tray-blue);outline-offset:1px;border-color:var(--tray-blue);}
+  textarea{resize:vertical;min-height:70px;font-family:var(--sans);}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:620px){.row{grid-template-columns:1fr;}}
+
+  .pill-group{display:flex;gap:8px;margin-bottom:16px;}
+  .pill{flex:1;text-align:center;border:1.5px solid var(--ink);padding:10px;font-family:var(--mono);font-size:13px;cursor:pointer;font-weight:600;}
+  .pill.selected{background:var(--ink);color:var(--paper);}
+
+  .filebox{border:2px dashed var(--line);padding:22px;text-align:center;margin-bottom:16px;cursor:pointer;background:var(--paper);}
+  .filebox:hover{border-color:var(--tray-blue);}
+  .filebox.has-file{border-style:solid;border-color:var(--ok-green);}
+  .filebox .hint{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-top:6px;}
+
+  .btn{
+    font-family:var(--mono);font-weight:700;font-size:13.5px;letter-spacing:.02em;
+    background:var(--ink);color:var(--paper);border:1.5px solid var(--ink);
+    padding:12px 20px;cursor:pointer;
+  }
+  .btn:hover{background:#3a352c;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn.outline{background:transparent;color:var(--ink);}
+  .btn.outline:hover{background:var(--paper-dark);}
+  .btn.small{padding:7px 12px;font-size:12px;}
+  .btn.red{background:var(--stamp-red);border-color:var(--stamp-red);}
+  .btn.blue{background:var(--tray-blue);border-color:var(--tray-blue);}
+  .btn.green{background:var(--ok-green);border-color:var(--ok-green);}
+
+  .price-box{border:1.5px solid var(--ink);padding:18px;background:var(--paper-dark);}
+  .price-box .amount{font-family:var(--mono);font-size:34px;font-weight:700;margin:4px 0;}
+  .price-box .breakdown{font-family:var(--mono);font-size:12px;color:var(--ink-soft);line-height:1.7;}
+
+  .divider{border:none;border-top:2px dashed var(--line);margin:22px 0;}
+
+  .confirm-id{font-family:var(--mono);font-size:22px;font-weight:700;background:var(--paper-dark);border:1.5px dashed var(--ink);padding:10px 14px;display:inline-block;}
+  .msg{font-family:var(--mono);font-size:12.5px;padding:10px 12px;border-left:4px solid var(--stamp-red);background:#FBEEE9;margin-bottom:14px;}
+  .msg.ok{border-color:var(--ok-green);background:#EAF3EC;}
+
+  /* Status stamp */
+  .stamp{
+    font-family:var(--mono);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    border:2px solid; padding:3px 9px; display:inline-block; transform:rotate(-3deg);
+  }
+  .stamp.pending{color:var(--warn-amber);border-color:var(--warn-amber);}
+  .stamp.printing{color:var(--tray-blue);border-color:var(--tray-blue);}
+  .stamp.ready{color:var(--ok-green);border-color:var(--ok-green);}
+  .stamp.completed{color:var(--ink-soft);border-color:var(--ink-soft);}
+  .stamp.cancelled{color:var(--stamp-red);border-color:var(--stamp-red);text-decoration:line-through;}
+
+  /* Order card (admin) */
+  .order-card{border:1.5px solid var(--ink);padding:16px 18px;margin-bottom:12px;background:var(--white);}
+  .order-card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+  .order-card .oid{font-family:var(--mono);font-weight:700;font-size:14px;}
+  .order-card .meta{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.8;}
+  .order-card .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  .thumb{max-width:160px;max-height:160px;border:1.5px solid var(--line);display:block;margin-top:8px;}
+  .filelink{font-family:var(--mono);font-size:12px;color:var(--tray-blue);text-decoration:underline;cursor:pointer;}
+
+  .filter-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+  .filter-tabs button{font-family:var(--mono);font-size:11.5px;border:1.5px solid var(--line);background:transparent;padding:7px 12px;cursor:pointer;}
+  .filter-tabs button.active{border-color:var(--ink);background:var(--ink);color:var(--paper);}
+
+  .login-box{max-width:340px;}
+  .logged-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);}
+
+  .field-note{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:-10px 0 16px;}
+  h3.section{font-family:var(--mono);font-size:14px;border-bottom:1.5px solid var(--line);padding-bottom:6px;margin:24px 0 14px;}
+  h3.section:first-child{margin-top:0;}
+
+  .exit-btn{
+    font-family:var(--mono);font-size:12.5px;font-weight:600;
+    background:transparent;border:1.5px solid var(--ink-soft);color:var(--ink-soft);
+    padding:9px 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  .exit-btn:hover{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div class="brand">
+      <span class="mark">No.001</span>
+      <div>
+        <h1>PRINTHOUSE</h1>
+        <div class="sub">order slip &amp; print queue system</div>
+      </div>
+    </div>
+    <div class="role-tabs">
+      <a class="exit-btn" href="index.html">← Exit to menu</a>
+      <button data-role="customer" class="active">Order Print</button>
+      <button data-role="admin">Staff Login</button>
+      <button data-role="super">Manager</button>
+    </div>
+  </div>
+
+  <div id="app"></div>
+</div>
+
+<!-- ============================================================
+     FIREBASE SETUP
+     1. Go to https://console.firebase.google.com → create a project
+     2. In the project, click the "</>" (web) icon to register a web app
+     3. Copy the firebaseConfig object it gives you and paste it below,
+        replacing the placeholder values.
+     4. In the left sidebar go to "Firestore Database" → "Create database"
+        → start in TEST MODE (fine for a small shop; lock down rules later).
+     ============================================================ -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage-compat.js"></script>
+<script>
+/* ---------------- firebase config — same project as Drip Live ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyAEiTkUxMmK4FOc31m-02dP5SDibSYhMaE",
+  authDomain: "liveselling-d91b4.firebaseapp.com",
+  databaseURL: "https://liveselling-d91b4-default-rtdb.firebaseio.com",
+  projectId: "liveselling-d91b4",
+  storageBucket: "liveselling-d91b4.firebasestorage.app",
+  messagingSenderId: "269088727615",
+  appId: "1:269088727615:web:9b162ed2986f1509720e8a"
+};
+
+let db = null;
+let fbStorage = null;
+try{
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  fbStorage = firebase.storage();
+}catch(e){
+  console.error('Firebase init failed:', e);
+}
+
+/* uploads the actual file to Firebase Storage and returns its public download URL.
+   Keeping the file out of Firestore means orders aren't capped by Firestore's
+   1 MiB per-document limit anymore. */
+async function uploadOrderFile(orderId, file){
+  if(!fbStorage) throw new Error('File storage isn\'t available right now.');
+  const safeName = (file.name || 'file').replace(/[\/\\#\[\]\?\*]/g, '_');
+  const path = `print-orders/${orderId}/${safeName}`;
+  const ref = fbStorage.ref().child(path);
+  await withTimeout(ref.put(file), 120000); // up to 2 min for larger files on slow connections
+  return await withTimeout(ref.getDownloadURL());
+}
+
+/* wraps a promise so a stuck/blocked network request fails loudly
+   instead of leaving the UI stuck on "Loading…" or "Submitting…" forever */
+function withTimeout(promise, ms=12000){
+  return Promise.race([
+    promise,
+    new Promise((_, reject)=> setTimeout(()=> reject(new Error('Request timed out — check your internet connection and try again.')), ms))
+  ]);
+}
+
+/* storage shim — same get/set/list shape the app already used,
+   backed by a single Firestore collection called "kv" */
+const storage = {
+  async get(key){
+    const snap = await withTimeout(db.collection('kv').doc(key).get());
+    if(!snap.exists) return null;
+    return { value: snap.data().value };
+  },
+  async set(key, value){
+    await withTimeout(db.collection('kv').doc(key).set({ value }));
+    return { key, value };
+  },
+  async list(prefix){
+    const q = await withTimeout(db.collection('kv')
+      .orderBy(firebase.firestore.FieldPath.documentId())
+      .startAt(prefix)
+      .endAt(prefix + '\uf8ff')
+      .get());
+    return { keys: q.docs.map(d => d.id) };
+  }
+};
+</script>
+<script>
+/* ---------------- constants ---------------- */
+const ADMIN_ACCOUNTS = [
+  { user:'admin1', pass:'admin123', label:'Staff 1' },
+  { user:'admin2', pass:'admin123', label:'Staff 2' }
+];
+const SUPER_ACCOUNT = { user:'superadmin', pass:'super123' };
+const STAFF_OPTIONS = [
+  ...ADMIN_ACCOUNTS.map(a=>({ user:a.user, label:a.label })),
+  { user:SUPER_ACCOUNT.user, label:'Manager' }
+];
+function staffLabel(user){
+  const found = STAFF_OPTIONS.find(s=>s.user===user);
+  return found ? found.label : (user || '');
+}
+const MAX_FILE_BYTES = 15 * 1024 * 1024; // 15MB — files now go to Firebase Storage, not inline in Firestore
+const STATUS_FLOW = ['pending','printing','ready','completed'];
+const STATUS_LABEL = { pending:'Pending', printing:'Printing', ready:'Ready for pickup', completed:'Completed', cancelled:'Cancelled' };
+
+const DEFAULT_SETTINGS = {
+  prices: {
+    short:{ bw:2, color:6 },
+    a4:{ bw:3, color:8 },
+    long:{ bw:4, color:10 }
+  },
+  gcashNumber:'0917-000-0000',
+  gcashName:'Juan Dela Cruz',
+  fbPageName:'YourPrintShopPH',
+  fbPageUrl:'https://facebook.com/YourPrintShopPH',
+  guidelines:'1. Upload your file and choose your print options below.\n2. Pay the exact total via GCash to the number shown.\n3. Send a screenshot of your GCash receipt to our Facebook Page, together with your Order ID.\n4. Wait for staff to confirm your payment — your order status will move to "Printing".\n5. Pick up your prints once the status shows "Ready for pickup".',
+  receiptInstructions:'Send your payment screenshot + Order ID via Messenger to our Facebook Page.',
+  turnaround:'Most orders are ready within 1–2 hours of confirmed payment.'
+};
+
+/* ---------------- state ---------------- */
+let settings = null;
+let orders = [];
+let loggedAdmin = JSON.parse(sessionStorage.getItem('printhouse_admin') || 'null');   // {user, label}
+let isSuper = sessionStorage.getItem('printhouse_super') === '1';
+let currentRole = loggedAdmin ? 'admin' : (isSuper ? 'super' : 'customer');
+let pendingFile = null;   // {name, type, size, file}
+
+const app = document.getElementById('app');
+
+/* ---------------- storage helpers ---------------- */
+async function loadSettings(){
+  try{
+    const r = await storage.get('settings');
+    settings = r ? JSON.parse(r.value) : DEFAULT_SETTINGS;
+  }catch(e){
+    settings = DEFAULT_SETTINGS;
+    try{ await storage.set('settings', JSON.stringify(DEFAULT_SETTINGS)); }catch(e2){}
+  }
+}
+async function saveSettings(newSettings){
+  settings = newSettings;
+  try{ await storage.set('settings', JSON.stringify(newSettings)); return true; }
+  catch(e){ return false; }
+}
+async function loadOrders(){
+  try{
+    const res = await storage.list('order:');
+    const keys = (res && res.keys) || [];
+    const items = [];
+    for(const k of keys){
+      try{
+        const r = await storage.get(k);
+        if(r) items.push(JSON.parse(r.value));
+      }catch(e){}
+    }
+    items.sort((a,b)=> b.createdAt - a.createdAt);
+    orders = items;
+  }catch(e){ orders = []; }
+}
+async function saveOrder(order){
+  if(!db){
+    return { ok:false, reason:'Storage isn\'t available right now — check your internet connection, or contact the shop.' };
+  }
+  const payload = JSON.stringify(order);
+  const approxBytes = payload.length; // JSON string length ~= byte count for our purposes
+  if(approxBytes > 900 * 1024){
+    return { ok:false, reason:'The order details are too large to save — please shorten your notes and try again.' };
+  }
+  try{
+    await storage.set('order:'+order.id, payload);
+    return { ok:true };
+  }catch(e){
+    console.error('saveOrder failed:', e);
+    const detail = (e && (e.message || e.toString)) ? (e.message || e.toString()) : 'Unknown error';
+    return { ok:false, reason:`Save failed: ${detail}` };
+  }
+}
+
+/* ---------------- utils ---------------- */
+function genId(){
+  return 'PR-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2,5).toUpperCase();
+}
+function fmtPeso(n){ return '₱' + n.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtDate(ts){ return new Date(ts).toLocaleString('en-PH', {dateStyle:'medium', timeStyle:'short'}); }
+function isValidEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------------- role switching ---------------- */
+document.querySelectorAll('.role-tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.role-tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRole = btn.dataset.role;
+    render();
+  });
+});
+
+/* ================= CUSTOMER VIEW ================= */
+function calcPrice(size, mode, pages, qty){
+  const p = settings.prices[size] ? settings.prices[size][mode] : 0;
+  return p * pages * qty;
+}
+
+function renderCustomer(){
+  const sizeOptions = Object.keys(settings.prices).map(k=>{
+    const labels = { short:'Short (8.5×11 / Letter)', a4:'A4', long:'Long (8.5×13)' };
+    return `<option value="${k}">${labels[k] || k}</option>`;
+  }).join('');
+
+  app.innerHTML = `
+    <div class="ticket">
+      <p class="ticket-title">Step 1</p>
+      <h2>New print order</h2>
+
+      <label for="c-email">Your Gmail / email address (required)</label>
+      <input type="email" id="c-email" placeholder="you@gmail.com">
+
+      <label>File to print (image, PDF, or Word doc)</label>
+      <div class="filebox" id="filebox">
+        <div id="filebox-text">Click to choose a file, or drag it here</div>
+        <div class="hint">Max ~15MB per file · one file per order</div>
+      </div>
+      <input type="file" id="c-file" accept="image/*,.pdf,.doc,.docx" style="display:none;">
+
+      <div class="row">
+        <div>
+          <label for="c-size">Paper size</label>
+          <select id="c-size">${sizeOptions}</select>
+        </div>
+        <div>
+          <label for="c-pages">Number of pages</label>
+          <input type="number" id="c-pages" min="1" value="1">
+        </div>
+      </div>
+
+      <label>Print color</label>
+      <div class="pill-group">
+        <div class="pill selected" data-mode="bw">Black &amp; White</div>
+        <div class="pill" data-mode="color">Colored</div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="c-qty">Copies</label>
+          <input type="number" id="c-qty" min="1" value="1">
+        </div>
+        <div>
+          <label for="c-notes">Special instructions (optional)</label>
+          <input type="text" id="c-notes" placeholder="e.g. staple, both sides, laminate">
+        </div>
+      </div>
+
+      <div class="price-box">
+        <div class="breakdown" id="price-breakdown">1 page × 1 copy × ₱0.00</div>
+        <div class="amount" id="price-amount">₱0.00</div>
+      </div>
+
+      <div id="c-msg"></div>
+      <div class="divider"></div>
+      <button class="btn" id="c-submit">Submit order</button>
+    </div>
+
+    <div class="ticket">
+      <p class="ticket-title">Already sent an order?</p>
+      <h2>Track order status</h2>
+      <div class="row">
+        <div>
+          <label for="t-id">Order ID</label>
+          <input type="text" id="t-id" placeholder="PR-XXXXXX-XXX">
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button class="btn outline" id="t-btn" style="margin-bottom:16px;">Check status</button>
+        </div>
+      </div>
+      <div id="t-result"></div>
+    </div>
+  `;
+
+  let mode = 'bw';
+  const $ = id => document.getElementById(id);
+
+  function updatePrice(){
+    const size = $('c-size').value;
+    const pages = Math.max(1, parseInt($('c-pages').value)||1);
+    const qty = Math.max(1, parseInt($('c-qty').value)||1);
+    const total = calcPrice(size, mode, pages, qty);
+    const perPage = settings.prices[size][mode];
+    $('price-breakdown').textContent = `${pages} page${pages>1?'s':''} × ${qty} cop${qty>1?'ies':'y'} × ${fmtPeso(perPage)}/page`;
+    $('price-amount').textContent = fmtPeso(total);
+    return total;
+  }
+  ['c-size','c-pages','c-qty'].forEach(id=> $(id).addEventListener('input', updatePrice));
+  document.querySelectorAll('.pill').forEach(p=>{
+    p.addEventListener('click', ()=>{
+      document.querySelectorAll('.pill').forEach(x=>x.classList.remove('selected'));
+      p.classList.add('selected');
+      mode = p.dataset.mode;
+      updatePrice();
+    });
+  });
+  updatePrice();
+
+  $('filebox').addEventListener('click', ()=> $('c-file').click());
+  $('c-file').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    if(file.size > MAX_FILE_BYTES){
+      $('c-msg').innerHTML = `<div class="msg">That file is too large for this system (limit ~15MB). Please use a smaller or compressed file.</div>`;
+      pendingFile = null;
+      return;
+    }
+    pendingFile = { name:file.name, type:file.type, size:file.size, file };
+    $('filebox').classList.add('has-file');
+    $('filebox-text').textContent = '✓ ' + file.name;
+    $('c-msg').innerHTML = '';
+  });
+
+  $('c-submit').addEventListener('click', async ()=>{
+    const email = $('c-email').value.trim();
+    const msgBox = $('c-msg');
+    if(!isValidEmail(email)){
+      msgBox.innerHTML = `<div class="msg">Please enter a valid email address before continuing.</div>`;
+      return;
+    }
+    if(!pendingFile){
+      msgBox.innerHTML = `<div class="msg">Please attach a file to print.</div>`;
+      return;
+    }
+    const size = $('c-size').value;
+    const pages = Math.max(1, parseInt($('c-pages').value)||1);
+    const qty = Math.max(1, parseInt($('c-qty').value)||1);
+    const notes = $('c-notes').value.trim();
+    const price = calcPrice(size, mode, pages, qty);
+
+    $('c-submit').disabled = true;
+    $('c-submit').textContent = 'Uploading file…';
+
+    const orderId = genId();
+    let fileUrl;
+    try{
+      fileUrl = await uploadOrderFile(orderId, pendingFile.file);
+    }catch(err){
+      console.error('uploadOrderFile failed:', err);
+      msgBox.innerHTML = `<div class="msg">Couldn't upload your file: ${escapeHtml(err.message || 'unknown error')}. Please try again.</div>`;
+      $('c-submit').disabled = false;
+      $('c-submit').textContent = 'Submit order';
+      return;
+    }
+
+    $('c-submit').textContent = 'Submitting…';
+
+    const order = {
+      id: orderId,
+      email, fileName: pendingFile.name, fileType: pendingFile.type, fileUrl,
+      paperSize: size, colorMode: mode, pages, quantity: qty, notes,
+      price, status:'pending', createdAt: Date.now(), handledBy:null
+    };
+    const result = await saveOrder(order);
+    if(!result.ok){
+      msgBox.innerHTML = `<div class="msg">Couldn't save your order: ${escapeHtml(result.reason || 'unknown error')}. Please try again.</div>`;
+      $('c-submit').disabled = false;
+      $('c-submit').textContent = 'Submit order';
+      return;
+    }
+    orders.unshift(order);
+    renderConfirmation(order);
+  });
+
+  $('t-btn').addEventListener('click', async ()=>{
+    const id = $('t-id').value.trim();
+    const box = $('t-result');
+    if(!id){ box.innerHTML = `<div class="msg">Enter your Order ID.</div>`; return; }
+    try{
+      const r = await storage.get('order:'+id);
+      if(!r){ box.innerHTML = `<div class="msg">No order found with that ID.</div>`; return; }
+      const o = JSON.parse(r.value);
+      box.innerHTML = `
+        <div class="msg ok">
+          <span class="stamp ${o.status}">${STATUS_LABEL[o.status]}</span><br><br>
+          ${o.pages} page(s) × ${o.quantity} cop${o.quantity>1?'ies':'y'} — ${fmtPeso(o.price)}<br>
+          Submitted ${fmtDate(o.createdAt)}
+        </div>`;
+    }catch(e){
+      box.innerHTML = `<div class="msg">No order found with that ID.</div>`;
+    }
+  });
+}
+
+function renderConfirmation(order){
+  app.innerHTML = `
+    <div class="ticket">
+      <p class="ticket-title">Order received</p>
+      <h2>Here's your Order ID — save this</h2>
+      <p class="confirm-id">${order.id}</p>
+
+      <div class="divider"></div>
+      <h3 class="section">Total to pay</h3>
+      <div class="price-box"><div class="amount">${fmtPeso(order.price)}</div></div>
+
+      <h3 class="section">1. Pay via GCash</h3>
+      <p style="font-family:var(--mono);font-size:14px;">
+        ${escapeHtml(settings.gcashName)}<br>
+        <strong style="font-size:18px;">${escapeHtml(settings.gcashNumber)}</strong>
+      </p>
+
+      <h3 class="section">2. Send your receipt</h3>
+      <p style="font-size:14.5px;">${escapeHtml(settings.receiptInstructions)}</p>
+      <p style="font-size:14.5px;">Facebook Page: <a href="${settings.fbPageUrl}" target="_blank" rel="noopener">${escapeHtml(settings.fbPageName)}</a></p>
+
+      <h3 class="section">Guidelines</h3>
+      <p style="font-size:14px;white-space:pre-line;color:var(--ink-soft);">${escapeHtml(settings.guidelines)}</p>
+      <p style="font-size:12.5px;color:var(--ink-soft);font-family:var(--mono);">${escapeHtml(settings.turnaround)}</p>
+
+      <div class="divider"></div>
+      <button class="btn outline" id="new-order-btn">Submit another order</button>
+    </div>
+  `;
+  document.getElementById('new-order-btn').addEventListener('click', ()=>{
+    pendingFile = null;
+    renderCustomer();
+  });
+}
+
+/* ================= ADMIN VIEW ================= */
+function renderAdminLogin(){
+  app.innerHTML = `
+    <div class="ticket login-box">
+      <p class="ticket-title">Staff access</p>
+      <h2>Staff login</h2>
+      <label for="a-user">Username</label>
+      <input type="text" id="a-user" placeholder="admin1">
+      <label for="a-pass">Password</label>
+      <input type="text" id="a-pass" placeholder="••••••••">
+      <div id="a-msg"></div>
+      <button class="btn" id="a-login">Log in</button>
+    </div>
+  `;
+  document.getElementById('a-login').addEventListener('click', ()=>{
+    const u = document.getElementById('a-user').value.trim();
+    const p = document.getElementById('a-pass').value;
+    const acct = ADMIN_ACCOUNTS.find(a=> a.user===u && a.pass===p);
+    if(!acct){
+      document.getElementById('a-msg').innerHTML = `<div class="msg">Incorrect username or password.</div>`;
+      return;
+    }
+    loggedAdmin = acct;
+    sessionStorage.setItem('printhouse_admin', JSON.stringify(acct));
+    renderAdminDashboard();
+  });
+}
+
+let adminFilter = 'pending';
+
+async function renderAdminDashboard(){
+  await loadOrders();
+  const filtered = adminFilter==='all' ? orders : orders.filter(o=>o.status===adminFilter);
+
+  app.innerHTML = `
+    <div class="logged-bar">
+      <span>Logged in as <strong>${loggedAdmin.label}</strong> (${loggedAdmin.user})</span>
+      <button class="btn small outline" id="a-logout">Log out</button>
+    </div>
+    <div class="ticket">
+      <p class="ticket-title">Print queue</p>
+      <h2>Work orders</h2>
+      <div class="filter-tabs">
+        ${['pending','printing','ready','completed','cancelled','all'].map(s=>`
+          <button data-f="${s}" class="${adminFilter===s?'active':''}">${s==='all'?'All':STATUS_LABEL[s]} ${s!=='all' ? '('+orders.filter(o=>o.status===s).length+')' : ''}</button>
+        `).join('')}
+      </div>
+      <div id="order-list">
+        ${filtered.length===0 ? `<p style="font-family:var(--mono);font-size:13px;color:var(--ink-soft);">No orders here right now.</p>` : filtered.map(orderCardHtml).join('')}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('a-logout').addEventListener('click', ()=>{ loggedAdmin=null; sessionStorage.removeItem('printhouse_admin'); renderAdminLogin(); });
+  document.querySelectorAll('.filter-tabs button').forEach(b=>{
+    b.addEventListener('click', ()=>{ adminFilter = b.dataset.f; renderAdminDashboard(); });
+  });
+  document.querySelectorAll('.order-card').forEach(card=>{
+    const id = card.dataset.id;
+    const order = orders.find(o=>o.id===id);
+    const nextBtn = card.querySelector('.btn-next');
+    const picker = card.querySelector('.staff-pick');
+    if(nextBtn && picker){
+      nextBtn.addEventListener('click', ()=>{
+        nextBtn.style.display = 'none';
+        picker.style.display = 'block';
+      });
+      const confirmBtn = picker.querySelector('.btn-confirm-advance');
+      confirmBtn.addEventListener('click', ()=>{
+        const staffUser = picker.querySelector('.staff-pick-select').value;
+        advanceStatus(order, staffUser);
+      });
+      const cancelBtn = picker.querySelector('.btn-cancel-pick');
+      cancelBtn.addEventListener('click', ()=>{
+        picker.style.display = 'none';
+        nextBtn.style.display = 'inline-block';
+      });
+    }
+    const cancelOrderBtn = card.querySelector('.btn-cancel');
+    if(cancelOrderBtn) cancelOrderBtn.addEventListener('click', ()=> setStatus(order,'cancelled'));
+    const fileLink = card.querySelector('.filelink');
+    if(fileLink) fileLink.addEventListener('click', ()=> downloadFile(order));
+  });
+}
+
+function orderCardHtml(o){
+  const isImage = (o.fileType||'').startsWith('image/');
+  const nextIdx = STATUS_FLOW.indexOf(o.status);
+  const nextLabel = nextIdx>=0 && nextIdx<STATUS_FLOW.length-1 ? `Mark as ${STATUS_LABEL[STATUS_FLOW[nextIdx+1]]}` : null;
+  return `
+    <div class="order-card" data-id="${o.id}">
+      <div class="top">
+        <div>
+          <div class="oid">${o.id}</div>
+          <div class="meta">
+            ${escapeHtml(o.email)}<br>
+            ${o.paperSize.toUpperCase()} · ${o.colorMode==='color'?'Colored':'B&W'} · ${o.pages} page(s) × ${o.quantity} · ${fmtPeso(o.price)}<br>
+            ${o.notes ? 'Note: '+escapeHtml(o.notes)+'<br>' : ''}
+            Submitted ${fmtDate(o.createdAt)}
+            ${o.handledBy ? `<br>Handled by: <strong>${escapeHtml(staffLabel(o.handledBy))}</strong>` : ''}
+          </div>
+        </div>
+        <span class="stamp ${o.status}">${STATUS_LABEL[o.status]}</span>
+      </div>
+      ${isImage
+        ? `<img class="thumb" src="${o.fileUrl || o.fileData}" alt="preview"><div class="filelink">⬇ Download ${escapeHtml(o.fileName)}</div>`
+        : `<div class="filelink">⬇ ${escapeHtml(o.fileName)}</div>`}
+      <div class="actions">
+        ${nextLabel ? `<button class="btn small blue btn-next">${nextLabel}</button>` : ''}
+        ${(o.status!=='completed' && o.status!=='cancelled') ? `<button class="btn small red btn-cancel">Cancel order</button>` : ''}
+      </div>
+      ${nextLabel ? `
+      <div class="staff-pick" style="display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);">
+        <label style="margin-bottom:4px;">Who's taking this order?</label>
+        <select class="staff-pick-select" style="width:100%;font-family:var(--sans);font-size:14px;padding:8px;border:1.5px solid var(--line);margin-bottom:8px;">
+          ${STAFF_OPTIONS.map(s=>`<option value="${s.user}" ${loggedAdmin && loggedAdmin.user===s.user ? 'selected':''}>${escapeHtml(s.label)}</option>`).join('')}
+        </select>
+        <button class="btn small blue btn-confirm-advance">Confirm — ${nextLabel}</button>
+        <button class="btn small outline btn-cancel-pick">Cancel</button>
+      </div>` : ''}
+    </div>
+  `;
+}
+
+function downloadFile(order){
+  const a = document.createElement('a');
+  a.href = order.fileUrl || order.fileData;
+  a.download = order.fileName;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.click();
+}
+
+async function advanceStatus(order, staffUser){
+  const idx = STATUS_FLOW.indexOf(order.status);
+  if(idx<0 || idx>=STATUS_FLOW.length-1) return;
+  order.status = STATUS_FLOW[idx+1];
+  order.handledBy = staffUser || (loggedAdmin ? loggedAdmin.user : 'manager');
+  await saveOrder(order);
+  if(currentRole==='admin') renderAdminDashboard(); else renderSuperDashboard();
+}
+async function setStatus(order, status){
+  order.status = status;
+  order.handledBy = loggedAdmin ? loggedAdmin.user : 'manager';
+  await saveOrder(order);
+  if(currentRole==='admin') renderAdminDashboard(); else renderSuperDashboard();
+}
+
+/* ================= SUPER ADMIN VIEW ================= */
+function renderSuperLogin(){
+  app.innerHTML = `
+    <div class="ticket login-box">
+      <p class="ticket-title">Manager access</p>
+      <h2>Manager login</h2>
+      <label for="s-user">Username</label>
+      <input type="text" id="s-user" placeholder="superadmin">
+      <label for="s-pass">Password</label>
+      <input type="text" id="s-pass" placeholder="••••••••">
+      <div id="s-msg"></div>
+      <button class="btn" id="s-login">Log in</button>
+    </div>
+  `;
+  document.getElementById('s-login').addEventListener('click', ()=>{
+    const u = document.getElementById('s-user').value.trim();
+    const p = document.getElementById('s-pass').value;
+    if(u===SUPER_ACCOUNT.user && p===SUPER_ACCOUNT.pass){
+      isSuper = true;
+      sessionStorage.setItem('printhouse_super', '1');
+      renderSuperDashboard();
+    }else{
+      document.getElementById('s-msg').innerHTML = `<div class="msg">Incorrect username or password.</div>`;
+    }
+  });
+}
+
+async function renderSuperDashboard(){
+  await loadOrders();
+  app.innerHTML = `
+    <div class="logged-bar">
+      <span>Logged in as <strong>Manager</strong></span>
+      <button class="btn small outline" id="s-logout">Log out</button>
+    </div>
+
+    <div class="ticket">
+      <p class="ticket-title">Customer-facing settings</p>
+      <h2>Edit prices &amp; guidelines</h2>
+
+      <h3 class="section">Pricing (per page)</h3>
+      ${Object.keys(settings.prices).map(size=>{
+        const labels = {short:'Short (Letter)', a4:'A4', long:'Long'};
+        return `
+        <div class="row">
+          <div><label>${labels[size]||size} — B&amp;W (₱)</label><input type="number" step="0.5" id="p-${size}-bw" value="${settings.prices[size].bw}"></div>
+          <div><label>${labels[size]||size} — Colored (₱)</label><input type="number" step="0.5" id="p-${size}-color" value="${settings.prices[size].color}"></div>
+        </div>`;
+      }).join('')}
+
+      <h3 class="section">Payment</h3>
+      <div class="row">
+        <div><label>GCash number</label><input type="text" id="s-gcash-num" value="${escapeHtml(settings.gcashNumber)}"></div>
+        <div><label>GCash account name</label><input type="text" id="s-gcash-name" value="${escapeHtml(settings.gcashName)}"></div>
+      </div>
+
+      <h3 class="section">Facebook Page (for receipts)</h3>
+      <div class="row">
+        <div><label>Page name</label><input type="text" id="s-fb-name" value="${escapeHtml(settings.fbPageName)}"></div>
+        <div><label>Page URL</label><input type="text" id="s-fb-url" value="${escapeHtml(settings.fbPageUrl)}"></div>
+      </div>
+
+      <h3 class="section">Receipt-sending instructions</h3>
+      <textarea id="s-receipt-instr">${escapeHtml(settings.receiptInstructions)}</textarea>
+
+      <h3 class="section">Order guidelines</h3>
+      <textarea id="s-guidelines" style="min-height:140px;">${escapeHtml(settings.guidelines)}</textarea>
+
+      <h3 class="section">Turnaround note</h3>
+      <input type="text" id="s-turnaround" value="${escapeHtml(settings.turnaround)}">
+
+      <div id="s-save-msg"></div>
+      <button class="btn green" id="s-save">Save changes</button>
+    </div>
+
+    <div class="ticket">
+      <p class="ticket-title">Oversight</p>
+      <h2>All orders (${orders.length})</h2>
+      <div id="super-order-list">
+        ${orders.length===0 ? `<p style="font-family:var(--mono);font-size:13px;color:var(--ink-soft);">No orders yet.</p>` : orders.map(orderCardHtml).join('')}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('s-logout').addEventListener('click', ()=>{ isSuper=false; sessionStorage.removeItem('printhouse_super'); renderSuperLogin(); });
+
+  document.getElementById('s-save').addEventListener('click', async ()=>{
+    const $ = id=>document.getElementById(id);
+    const newSettings = JSON.parse(JSON.stringify(settings));
+    Object.keys(newSettings.prices).forEach(size=>{
+      newSettings.prices[size].bw = parseFloat($(`p-${size}-bw`).value)||0;
+      newSettings.prices[size].color = parseFloat($(`p-${size}-color`).value)||0;
+    });
+    newSettings.gcashNumber = $('s-gcash-num').value.trim();
+    newSettings.gcashName = $('s-gcash-name').value.trim();
+    newSettings.fbPageName = $('s-fb-name').value.trim();
+    newSettings.fbPageUrl = $('s-fb-url').value.trim();
+    newSettings.receiptInstructions = $('s-receipt-instr').value.trim();
+    newSettings.guidelines = $('s-guidelines').value.trim();
+    newSettings.turnaround = $('s-turnaround').value.trim();
+
+    const ok = await saveSettings(newSettings);
+    $('s-save-msg').innerHTML = ok
+      ? `<div class="msg ok">Saved. Customers will see these changes immediately.</div>`
+      : `<div class="msg">Could not save changes — please try again.</div>`;
+  });
+
+  document.querySelectorAll('#super-order-list .order-card').forEach(card=>{
+    const id = card.dataset.id;
+    const order = orders.find(o=>o.id===id);
+    const nextBtn = card.querySelector('.btn-next');
+    const picker = card.querySelector('.staff-pick');
+    if(nextBtn && picker){
+      nextBtn.addEventListener('click', ()=>{
+        nextBtn.style.display = 'none';
+        picker.style.display = 'block';
+      });
+      const confirmBtn = picker.querySelector('.btn-confirm-advance');
+      confirmBtn.addEventListener('click', ()=>{
+        const staffUser = picker.querySelector('.staff-pick-select').value;
+        advanceStatus(order, staffUser);
+      });
+      const cancelBtn = picker.querySelector('.btn-cancel-pick');
+      cancelBtn.addEventListener('click', ()=>{
+        picker.style.display = 'none';
+        nextBtn.style.display = 'inline-block';
+      });
+    }
+    const cancelOrderBtn = card.querySelector('.btn-cancel');
+    if(cancelOrderBtn) cancelOrderBtn.addEventListener('click', ()=> setStatus(order,'cancelled'));
+    const fileLink = card.querySelector('.filelink');
+    if(fileLink) fileLink.addEventListener('click', ()=> downloadFile(order));
+  });
+}
+
+/* ================= ROUTER ================= */
+function render(){
+  if(currentRole==='customer'){ pendingFile=null; renderCustomer(); }
+  else if(currentRole==='admin'){ loggedAdmin ? renderAdminDashboard() : renderAdminLogin(); }
+  else if(currentRole==='super'){ isSuper ? renderSuperDashboard() : renderSuperLogin(); }
+}
+
+/* ---------------- init ---------------- */
+(async function init(){
+  app.innerHTML = `<p style="font-family:var(--mono);font-size:13px;color:var(--ink-soft);">Loading…</p>`;
+  if(!db){
+    app.innerHTML = `<div class="msg">This app can't reach its storage system, so orders can't be saved right now. This usually means the Firebase config at the top of the page hasn't been filled in yet, or Firestore isn't reachable. Check with whoever set this page up.</div>`;
+    return;
+  }
+  await loadSettings();
+  await loadOrders();
+  document.querySelectorAll('.role-tabs button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.role === currentRole);
+  });
+  render();
+})();
+</script>
+</body>
+</html>
